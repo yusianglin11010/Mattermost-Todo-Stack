@@ -1,0 +1,328 @@
+{
+  "name": "Mattermost Todo Stack",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mattermost/todos/:action",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        -200
+      ],
+      "id": "42964245-5e48-45f9-8d0f-d648bcc50871",
+      "name": "Webhook",
+      "webhookId": "85de886d-2694-4df0-87b0-965db533f492"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.params.action }}",
+                    "rightValue": "add",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "e9d2ff7f-314a-438e-af23-60b23248b274"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c9834751-9110-4926-975e-794d353aca3a",
+                    "leftValue": "={{ $json.params.action }}",
+                    "rightValue": "list",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1380,
+        -200
+      ],
+      "id": "d3881675-8d36-49fe-b3de-179082fb086c",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d5c4504-db56-4c3b-8ccb-00045ff453f8",
+              "name": "markdownTable",
+              "value": "={{ $json.markdownTable }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -640,
+        -60
+      ],
+      "id": "4cb065ea-a0dd-4f48-b8fc-4a4be57d82c0",
+      "name": "Set Values1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"user_name\", \"text\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -820,
+        -60
+      ],
+      "id": "bd19fe77-a33d-44b0-babe-97a428bf51b6",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').first().json.body.response_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Token s5cp3xebgbyiun1rncn4bmgw9o"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.markdownTable }}"
+            },
+            {
+              "name": "response_type",
+              "value": "in_channel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -420,
+        -60
+      ],
+      "id": "e630a282-7ac5-4f4f-9347-aa7bf867a7ee",
+      "name": "Response msg"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
+              "name": "channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "00e7ba5e-5c2c-40a8-bbde-10562f7b7949",
+              "name": "text",
+              "value": "={{ $('Webhook').item.json.body.text }}",
+              "type": "string"
+            },
+            {
+              "id": "1e7580ec-82af-4669-8882-03ce3c2c224e",
+              "name": "user_name",
+              "value": "={{ $('Webhook').item.json.body.user_name }}",
+              "type": "string"
+            },
+            {
+              "id": "df68d03b-1adb-4395-97e6-9192cd025377",
+              "name": "user_id",
+              "value": "={{ $('Webhook').item.json.body.user_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1040,
+        -280
+      ],
+      "id": "fee3f037-09bf-45b0-ada9-96287c7bfb60",
+      "name": "Set values"
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "todo",
+        "fields": "channel_id,text,user_name,user_id",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -820,
+        -280
+      ],
+      "id": "0c137faf-7336-4a3a-8804-0da19790677e",
+      "name": "Add todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -1020,
+        -60
+      ],
+      "id": "f4e829aa-aec8-4090-86fc-8b58cf267506",
+      "name": "Find todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Set values",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Values1": {
+      "main": [
+        [
+          {
+            "node": "Response msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to md table": {
+      "main": [
+        [
+          {
+            "node": "Set Values1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set values": {
+      "main": [
+        [
+          {
+            "node": "Add todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ffb10a10-fc8f-43a4-a699-8312931ccb4f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
+  },
+  "id": "QItQ0vJDJppg4DYs",
+  "tags": []
+}
