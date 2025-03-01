@@ -1,5 +1,5 @@
 {
-  "name": "Mattermost Todo Stack",
+  "name": "Mattermost Stack",
   "nodes": [
     {
       "parameters": {
@@ -10,10 +10,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1600,
-        -200
+        -1200,
+        -720
       ],
-      "id": "42964245-5e48-45f9-8d0f-d648bcc50871",
+      "id": "97ca5794-eb84-4c6e-bae8-228af87484a9",
       "name": "Webhook",
       "webhookId": "85de886d-2694-4df0-87b0-965db533f492"
     },
@@ -65,6 +65,29 @@
                 ],
                 "combinator": "and"
               }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dfa382bb-fb0c-47b4-9f15-4fc09d0f4c57",
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
             }
           ]
         },
@@ -73,10 +96,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -1380,
-        -200
+        -980,
+        -720
       ],
-      "id": "d3881675-8d36-49fe-b3de-179082fb086c",
+      "id": "988da9de-5bcb-42da-9cfa-d9ba91f35ba5",
       "name": "Switch"
     },
     {
@@ -96,23 +119,23 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -640,
-        -60
+        -240,
+        -580
       ],
-      "id": "4cb065ea-a0dd-4f48-b8fc-4a4be57d82c0",
+      "id": "a70e682b-ba36-44aa-9879-8beb20026d09",
       "name": "Set Values1"
     },
     {
       "parameters": {
-        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"user_name\", \"text\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"done\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -820,
-        -60
+        -420,
+        -580
       ],
-      "id": "bd19fe77-a33d-44b0-babe-97a428bf51b6",
+      "id": "30665570-723d-4927-961a-1ba6275535d2",
       "name": "Convert to md table",
       "alwaysOutputData": true
     },
@@ -147,10 +170,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -420,
-        -60
+        -20,
+        -580
       ],
-      "id": "e630a282-7ac5-4f4f-9347-aa7bf867a7ee",
+      "id": "da3935e7-a221-4a94-a571-2a8f6ab31fb9",
       "name": "Response msg"
     },
     {
@@ -180,6 +203,18 @@
               "name": "user_id",
               "value": "={{ $('Webhook').item.json.body.user_id }}",
               "type": "string"
+            },
+            {
+              "id": "d61c4ddc-f021-4d86-9461-da750aec60cc",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "f1cbbba3-ba6e-4a85-8050-a78bbf98c9bf",
+              "name": "done",
+              "value": ":x:",
+              "type": "string"
             }
           ]
         },
@@ -188,26 +223,28 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1040,
-        -280
+        -120,
+        -1020
       ],
-      "id": "fee3f037-09bf-45b0-ada9-96287c7bfb60",
-      "name": "Set values"
+      "id": "b23e247d-80d8-45b0-a87e-e495dfc743e4",
+      "name": "Set values",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
     },
     {
       "parameters": {
         "operation": "insert",
         "collection": "todo",
-        "fields": "channel_id,text,user_name,user_id",
+        "fields": "channel_id,text,user_name,user_id,id,done",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -820,
-        -280
+        240,
+        -1020
       ],
-      "id": "0c137faf-7336-4a3a-8804-0da19790677e",
+      "id": "979733bd-3b5c-4158-853a-1008817c3693",
       "name": "Add todo",
       "credentials": {
         "mongoDb": {
@@ -225,10 +262,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -1020,
-        -60
+        -620,
+        -580
       ],
-      "id": "f4e829aa-aec8-4090-86fc-8b58cf267506",
+      "id": "41d214e5-9c40-4e94-8432-3f4314ffaaa9",
       "name": "Find todo",
       "credentials": {
         "mongoDb": {
@@ -236,6 +273,119 @@
           "name": "mattermost"
         }
       }
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -780,
+        -880
+      ],
+      "id": "0fcbe5df-3b47-4bf2-a31a-63a068b42a61",
+      "name": "Find todo1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        60,
+        -1020
+      ],
+      "id": "8e8e3abd-1db7-4558-82a8-ff46cc3598c5",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e894ab39-3f0e-4751-aac7-d796b3e8180f",
+              "leftValue": "={{ $('Find todo1').item.json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -580,
+        -1000
+      ],
+      "id": "96f6d151-038f-4728-8c37-baba53c6f72b",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -400,
+        -1140
+      ],
+      "id": "667cea8c-3657-449f-bef1-3c90938fa441",
+      "name": "set id 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "={{ $('Find todo1').all().length+1 }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -340,
+        -920
+      ],
+      "id": "3c9cfc00-1468-4553-8995-b3557c89ccfc",
+      "name": "set id count +1"
     }
   ],
   "pinData": {},
@@ -255,7 +405,7 @@
       "main": [
         [
           {
-            "node": "Set values",
+            "node": "Find todo1",
             "type": "main",
             "index": 0
           }
@@ -266,7 +416,8 @@
             "type": "main",
             "index": 0
           }
-        ]
+        ],
+        []
       ]
     },
     "Set Values1": {
@@ -295,7 +446,7 @@
       "main": [
         [
           {
-            "node": "Add todo",
+            "node": "Limit",
             "type": "main",
             "index": 0
           }
@@ -312,13 +463,75 @@
           }
         ]
       ]
+    },
+    "Find todo1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Add todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "set id 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "set id count +1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set id 1": {
+      "main": [
+        [
+          {
+            "node": "Set values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "set id count +1": {
+      "main": [
+        [
+          {
+            "node": "Set values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": true,
+  "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "ffb10a10-fc8f-43a4-a699-8312931ccb4f",
+  "versionId": "3fdae841-8ae4-4626-8da3-041ac6f17324",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
