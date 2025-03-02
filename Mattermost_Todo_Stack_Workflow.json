@@ -10,7 +10,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1200,
+        -1320,
         -720
       ],
       "id": "97ca5794-eb84-4c6e-bae8-228af87484a9",
@@ -77,8 +77,8 @@
                 "conditions": [
                   {
                     "id": "dfa382bb-fb0c-47b4-9f15-4fc09d0f4c57",
-                    "leftValue": "",
-                    "rightValue": "",
+                    "leftValue": "={{ $json.params.action }}",
+                    "rightValue": "done",
                     "operator": {
                       "type": "string",
                       "operation": "equals",
@@ -96,7 +96,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -980,
+        -1100,
         -720
       ],
       "id": "988da9de-5bcb-42da-9cfa-d9ba91f35ba5",
@@ -119,8 +119,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -240,
-        -580
+        -160,
+        -680
       ],
       "id": "a70e682b-ba36-44aa-9879-8beb20026d09",
       "name": "Set Values1"
@@ -132,8 +132,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -420,
-        -580
+        -340,
+        -680
       ],
       "id": "30665570-723d-4927-961a-1ba6275535d2",
       "name": "Convert to md table",
@@ -170,8 +170,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -20,
-        -580
+        40,
+        -680
       ],
       "id": "da3935e7-a221-4a94-a571-2a8f6ab31fb9",
       "name": "Response msg"
@@ -223,7 +223,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -120,
+        160,
         -1020
       ],
       "id": "b23e247d-80d8-45b0-a87e-e495dfc743e4",
@@ -241,7 +241,7 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        240,
+        620,
         -1020
       ],
       "id": "979733bd-3b5c-4158-853a-1008817c3693",
@@ -262,28 +262,7 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -620,
-        -580
-      ],
-      "id": "41d214e5-9c40-4e94-8432-3f4314ffaaa9",
-      "name": "Find todo",
-      "credentials": {
-        "mongoDb": {
-          "id": "mpJVL6vUNDV3B35S",
-          "name": "mattermost"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "collection": "todo",
-        "options": {},
-        "query": "={\"channel_id\": \"{{ $json.body.channel_id }}\"}"
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.1,
-      "position": [
-        -780,
+        -560,
         -880
       ],
       "id": "0fcbe5df-3b47-4bf2-a31a-63a068b42a61",
@@ -301,7 +280,7 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        60,
+        360,
         -1020
       ],
       "id": "8e8e3abd-1db7-4558-82a8-ff46cc3598c5",
@@ -335,7 +314,7 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -580,
+        -360,
         -1000
       ],
       "id": "96f6d151-038f-4728-8c37-baba53c6f72b",
@@ -358,8 +337,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -400,
-        -1140
+        -120,
+        -1100
       ],
       "id": "667cea8c-3657-449f-bef1-3c90938fa441",
       "name": "set id 1"
@@ -381,11 +360,227 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -340,
+        -120,
         -920
       ],
       "id": "3c9cfc00-1468-4553-8995-b3557c89ccfc",
       "name": "set id count +1"
+    },
+    {
+      "parameters": {
+        "content": "## 實作 increment id(需要再調整為用最大值 id 往上 + 1)\n\n** 找不到 Channel todo 資料，就將 id 設定為 1\n** 找到 Channel todo 資料，就將資料設定為資料長度 +1",
+        "height": 500,
+        "width": 740
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -580,
+        -1280
+      ],
+      "id": "6a360d31-fca5-4c6e-aaca-2876c656460a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "透過 body parameter 的方式，避免使用 json \\n 會直接被 evaluate 導致回傳後 json 格式出錯\n",
+        "height": 280,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        -800
+      ],
+      "id": "354747f1-c745-426d-92a5-1c6901d8f75a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "todo",
+        "updateKey": "=_id",
+        "fields": "done",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        -440
+      ],
+      "id": "3cc61c73-99a3-41c1-9960-179ce6b8e800",
+      "name": "complete todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10f4ab02-7c65-49d2-9f8b-3be363f5a408",
+              "name": "_id",
+              "value": "={{ $json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -420,
+        -440
+      ],
+      "id": "e39c04cb-b74a-4a02-9cba-f6f4d8ca4491",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9739ca52-42f0-4775-b251-c0db1058b0d4",
+              "name": "_id",
+              "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "b6adae5e-4c7c-49b1-935e-cad4490d23c8",
+              "name": "done",
+              "value": "=:white_check_mark:",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -200,
+        -440
+      ],
+      "id": "0b52d935-77b0-471a-9876-bc6764701392",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "\n## avoid double quote",
+        "height": 260,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        -500
+      ],
+      "id": "145fd276-ed55-4dea-9481-c9969a4ab16f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fac1d067-0739-409f-a012-97353e7a9dd1",
+              "leftValue": "={{ $json.body.text }}",
+              "rightValue": "all",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -820,
+        -680
+      ],
+      "id": "9520a01a-69f8-4632-ae7c-c33a1d8c8aa8",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"},{\"id\":\"{{ $json.body.text }}\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -640,
+        -440
+      ],
+      "id": "d2edf223-4aab-4c05-97dc-a7bb0a065151",
+      "name": "Find Todo By Id",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"},{\"done\":\":x:\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        -740
+      ],
+      "id": "41d214e5-9c40-4e94-8432-3f4314ffaaa9",
+      "name": "Find Undone Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        -600
+      ],
+      "id": "60848a0d-dd7f-41f5-86e8-eb54c9730608",
+      "name": "Find All Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
     }
   ],
   "pinData": {},
@@ -412,12 +607,18 @@
         ],
         [
           {
-            "node": "Find todo",
+            "node": "If1",
             "type": "main",
             "index": 0
           }
         ],
-        []
+        [
+          {
+            "node": "Find Todo By Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Set Values1": {
@@ -447,17 +648,6 @@
         [
           {
             "node": "Limit",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Find todo": {
-      "main": [
-        [
-          {
-            "node": "Convert to md table",
             "type": "main",
             "index": 0
           }
@@ -525,13 +715,86 @@
           }
         ]
       ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "complete todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Find Undone Todo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find All Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Todo By Id": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Undone Todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find All Todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "3fdae841-8ae4-4626-8da3-041ac6f17324",
+  "versionId": "f76b4548-e84f-4487-96dd-f962fbd30fbd",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
