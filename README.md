@@ -14,7 +14,7 @@ Welcome to your To-Do Bot! This is a n8n workflow integrated mattermost slash co
 **Example:**  
 `/todo-add Submit quarterly report`
 
-### Mark a Task as Done(Coming Soon)
+### Mark a Task as Done
 ```shell
 /todo-done [Task ID]
 ```
@@ -33,6 +33,13 @@ Welcome to your To-Do Bot! This is a n8n workflow integrated mattermost slash co
 /todo-list
 ```
 - Displays all tasks with their statuses, priorities, tags, and due dates.
+- Default to list all undone todos
+
+
+- use below to list all status todos
+```shell
+/todo-list all
+```
 
 ### Clear All Completed Tasks(Coming Soon)
 ```shell
