@@ -10,7 +10,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1320,
+        -1780,
         -720
       ],
       "id": "97ca5794-eb84-4c6e-bae8-228af87484a9",
@@ -96,7 +96,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -1100,
+        -1140,
         -720
       ],
       "id": "988da9de-5bcb-42da-9cfa-d9ba91f35ba5",
@@ -127,7 +127,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"done\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -189,7 +189,7 @@
             {
               "id": "00e7ba5e-5c2c-40a8-bbde-10562f7b7949",
               "name": "text",
-              "value": "={{ $('Webhook').item.json.body.text }}",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.text }}",
               "type": "string"
             },
             {
@@ -215,6 +215,12 @@
               "name": "done",
               "value": ":x:",
               "type": "string"
+            },
+            {
+              "id": "c00560b1-83ba-4de6-a7ae-5f06270689f8",
+              "name": "=assignee",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.assignee }}",
+              "type": "string"
             }
           ]
         },
@@ -223,7 +229,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        160,
+        280,
         -1020
       ],
       "id": "b23e247d-80d8-45b0-a87e-e495dfc743e4",
@@ -235,14 +241,14 @@
       "parameters": {
         "operation": "insert",
         "collection": "todo",
-        "fields": "channel_id,text,user_name,user_id,id,done",
+        "fields": "channel_id,text,user_name,user_id,id,done,assignee",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        620,
-        -1020
+        1120,
+        -1040
       ],
       "id": "979733bd-3b5c-4158-853a-1008817c3693",
       "name": "Add todo",
@@ -262,8 +268,8 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -560,
-        -880
+        -620,
+        -920
       ],
       "id": "0fcbe5df-3b47-4bf2-a31a-63a068b42a61",
       "name": "Find todo1",
@@ -280,7 +286,7 @@
       "type": "n8n-nodes-base.limit",
       "typeVersion": 1,
       "position": [
-        360,
+        560,
         -1020
       ],
       "id": "8e8e3abd-1db7-4558-82a8-ff46cc3598c5",
@@ -581,9 +587,63 @@
           "name": "mattermost"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.body.text\n\n// Updated regex to capture strings inside the first two pairs of square brackets\nconst regex = /\\[(.*?)\\]/g;\n\nlet matches;\nlet text = null;\nlet assignee = null;\n\n// Using a loop to retrieve matches\nlet count = 0;\nwhile ((matches = regex.exec(input)) !== null) {\n    count++;\n    if (count === 1) {\n        text = matches[1]; // First match\n    } else if (count === 2) {\n        assignee = matches[1]; // Second match\n        break; // No need to continue after the second match\n    }\n}\n\n// Return the results\nreturn { text, assignee };"
+      },
+      "id": "0d0229f7-4318-4675-b290-c4b80d9d9bb4",
+      "name": "Todo Creation Arg Converter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -880
+      ]
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "connection": "close",
+            "host": "n8n.weiting.me",
+            "x-real-ip": "20.89.163.71",
+            "x-forwarded-for": "20.89.163.71",
+            "x-forwarded-proto": "https",
+            "content-length": "709",
+            "user-agent": "Mattermost-Bot/1.1",
+            "accept": "application/json",
+            "authorization": "Token rqzs9eozk3dw9kbngw6bgy8rdo",
+            "content-type": "application/x-www-form-urlencoded",
+            "accept-encoding": "gzip"
+          },
+          "params": {
+            "action": "add"
+          },
+          "query": {},
+          "body": {
+            "channel_id": "kik5etzf8tbxdg7ts1fz1ry5fa",
+            "channel_name": "devin_test_webhook",
+            "command": "/todo-add",
+            "response_url": "https://chat.gss.tw/hooks/commands/zr86bn3kqjfo5prdgdjone54ay",
+            "team_domain": "gss",
+            "team_id": "ryrniq9s6pggfxyoniqjpisxge",
+            "text": "[請告訴我這是什麼] [@devin]",
+            "token": "rqzs9eozk3dw9kbngw6bgy8rdo",
+            "trigger_id": "aTN4NTFhejNrZjg5anExZzc3ZnJmY2VzdXk6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTAxNTg1NDE1MzpNRVlDSVFDOTNOYnNFMXd1M29aS0xQOWJOWVZQTGw0U0dlUzFJZ09PSHFGY2diR3hwd0loQUxOWThWOUFRY21HeXlhNHVRMDF3RmY0amRtWFJaWC9JQ3QvR0JyTTNiYkY=",
+            "user_id": "okao1ypwzjbiimd5oxccq7hdch",
+            "user_mentions": "devin",
+            "user_mentions_ids": "okao1ypwzjbiimd5oxccq7hdch",
+            "user_name": "devin"
+          },
+          "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
       "main": [
@@ -600,7 +660,7 @@
       "main": [
         [
           {
-            "node": "Find todo1",
+            "node": "Todo Creation Arg Converter",
             "type": "main",
             "index": 0
           }
@@ -788,13 +848,24 @@
           }
         ]
       ]
+    },
+    "Todo Creation Arg Converter": {
+      "main": [
+        [
+          {
+            "node": "Find todo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "f76b4548-e84f-4487-96dd-f962fbd30fbd",
+  "versionId": "4f4df3a6-fde1-4b30-826b-d07d3b026701",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
