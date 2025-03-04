@@ -10,7 +10,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1780,
+        -1860,
         -720
       ],
       "id": "97ca5794-eb84-4c6e-bae8-228af87484a9",
@@ -96,7 +96,7 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -1140,
+        -1520,
         -720
       ],
       "id": "988da9de-5bcb-42da-9cfa-d9ba91f35ba5",
@@ -127,7 +127,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -170,8 +170,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        40,
-        -680
+        440,
+        -600
       ],
       "id": "da3935e7-a221-4a94-a571-2a8f6ab31fb9",
       "name": "Response msg"
@@ -221,6 +221,12 @@
               "name": "=assignee",
               "value": "={{ $('Todo Creation Arg Converter').item.json.assignee }}",
               "type": "string"
+            },
+            {
+              "id": "a2048aa9-a5b0-4ac1-be6e-5cfcce86457b",
+              "name": "priority",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.priority }}",
+              "type": "number"
             }
           ]
         },
@@ -241,13 +247,13 @@
       "parameters": {
         "operation": "insert",
         "collection": "todo",
-        "fields": "channel_id,text,user_name,user_id,id,done,assignee",
+        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        1120,
+        880,
         -1040
       ],
       "id": "979733bd-3b5c-4158-853a-1008817c3693",
@@ -519,8 +525,8 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -820,
-        -680
+        -920,
+        -720
       ],
       "id": "9520a01a-69f8-4632-ae7c-c33a1d8c8aa8",
       "name": "If1"
@@ -590,7 +596,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json.body.text\n\n// Updated regex to capture strings inside the first two pairs of square brackets\nconst regex = /\\[(.*?)\\]/g;\n\nlet matches;\nlet text = null;\nlet assignee = null;\n\n// Using a loop to retrieve matches\nlet count = 0;\nwhile ((matches = regex.exec(input)) !== null) {\n    count++;\n    if (count === 1) {\n        text = matches[1]; // First match\n    } else if (count === 2) {\n        assignee = matches[1]; // Second match\n        break; // No need to continue after the second match\n    }\n}\n\n// Return the results\nreturn { text, assignee };"
+        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w@.]+)|-([\\w])=([\\w@.]+)/g;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    const value = matches[2] || matches[4]; // Get the associated value\n\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
       },
       "id": "0d0229f7-4318-4675-b290-c4b80d9d9bb4",
       "name": "Todo Creation Arg Converter",
@@ -600,50 +606,106 @@
         -880,
         -880
       ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bfb8506d-965f-492d-bb95-1f03d388722f",
+              "leftValue": "={{ $('Webhook').first().json.body.text }}",
+              "rightValue": "--verbose",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        180,
+        -700
+      ],
+      "id": "6115fc56-2ba0-4f45-a557-3d2f4bad0610",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "MMAUTHTOKEN=a8ykq3d9q7dd3rodf5fuqchaur; MMUSERID=okao1ypwzjbiimd5oxccq7hdch; MMCSRF=qqem4zzhtjdbpbycf68djbu8tw; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FNVG3dPwxfhdchkanpk4SkEU4KlzotB0Q%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Wa0qeMbhrm%2Fv4F9mqPFTduKD0dddkUO0%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FChpwGOIWXqBFHqk5Zr3PPUCKtUW00O708PRLDmTah3Y7DbvemNWXDn3WT4HBDhqiSpulP3Q32Sg%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19bFnt0RyJrPC2HTFcJPMcWKlJ5HhQb1Xw%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX19ckZI0TGBCaDpItPmTFcpZolqR8sRkc%2FY%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BtuzH4miurhhPqV%2Fvd%2FakDQj0O%2B6YWO3W7QOQM6pXoOY2GOt6epGQE; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FCUHvlwNTZOS0RDiDdDf%2FW89N5xSP5Qkc%3D"
+            },
+            {
+              "name": "X-Csrf-Token",
+              "value": "qqem4zzhtjdbpbycf68djbu8tw"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Convert to md table').item.json.markdownTable }}"
+            },
+            {
+              "name": "channel_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -860
+      ],
+      "id": "9d416e5f-e729-48aa-bfa2-9674aeaedbb8",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "url": "=https://chat.gss.tw/api/v4/teams/ryrniq9s6pggfxyoniqjpisxge/channels/name/{{ $('Webhook').first().json.body.user_id }}__{{ $('Webhook').first().json.body.user_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "MMAUTHTOKEN=a8ykq3d9q7dd3rodf5fuqchaur; MMUSERID=okao1ypwzjbiimd5oxccq7hdch; MMCSRF=qqem4zzhtjdbpbycf68djbu8tw; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FNVG3dPwxfhdchkanpk4SkEU4KlzotB0Q%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Wa0qeMbhrm%2Fv4F9mqPFTduKD0dddkUO0%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FChpwGOIWXqBFHqk5Zr3PPUCKtUW00O708PRLDmTah3Y7DbvemNWXDn3WT4HBDhqiSpulP3Q32Sg%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19bFnt0RyJrPC2HTFcJPMcWKlJ5HhQb1Xw%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX19ckZI0TGBCaDpItPmTFcpZolqR8sRkc%2FY%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BtuzH4miurhhPqV%2Fvd%2FakDQj0O%2B6YWO3W7QOQM6pXoOY2GOt6epGQE; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FCUHvlwNTZOS0RDiDdDf%2FW89N5xSP5Qkc%3D"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        -860
+      ],
+      "id": "933093f7-7792-442a-b4d4-f6f64bd73d11",
+      "name": "Search Channel"
     }
   ],
-  "pinData": {
-    "Webhook": [
-      {
-        "json": {
-          "headers": {
-            "connection": "close",
-            "host": "n8n.weiting.me",
-            "x-real-ip": "20.89.163.71",
-            "x-forwarded-for": "20.89.163.71",
-            "x-forwarded-proto": "https",
-            "content-length": "709",
-            "user-agent": "Mattermost-Bot/1.1",
-            "accept": "application/json",
-            "authorization": "Token rqzs9eozk3dw9kbngw6bgy8rdo",
-            "content-type": "application/x-www-form-urlencoded",
-            "accept-encoding": "gzip"
-          },
-          "params": {
-            "action": "add"
-          },
-          "query": {},
-          "body": {
-            "channel_id": "kik5etzf8tbxdg7ts1fz1ry5fa",
-            "channel_name": "devin_test_webhook",
-            "command": "/todo-add",
-            "response_url": "https://chat.gss.tw/hooks/commands/zr86bn3kqjfo5prdgdjone54ay",
-            "team_domain": "gss",
-            "team_id": "ryrniq9s6pggfxyoniqjpisxge",
-            "text": "[請告訴我這是什麼] [@devin]",
-            "token": "rqzs9eozk3dw9kbngw6bgy8rdo",
-            "trigger_id": "aTN4NTFhejNrZjg5anExZzc3ZnJmY2VzdXk6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTAxNTg1NDE1MzpNRVlDSVFDOTNOYnNFMXd1M29aS0xQOWJOWVZQTGw0U0dlUzFJZ09PSHFGY2diR3hwd0loQUxOWThWOUFRY21HeXlhNHVRMDF3RmY0amRtWFJaWC9JQ3QvR0JyTTNiYkY=",
-            "user_id": "okao1ypwzjbiimd5oxccq7hdch",
-            "user_mentions": "devin",
-            "user_mentions_ids": "okao1ypwzjbiimd5oxccq7hdch",
-            "user_name": "devin"
-          },
-          "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
-          "executionMode": "test"
-        }
-      }
-    ]
-  },
+  "pinData": {},
   "connections": {
     "Webhook": {
       "main": [
@@ -685,7 +747,7 @@
       "main": [
         [
           {
-            "node": "Response msg",
+            "node": "If2",
             "type": "main",
             "index": 0
           }
@@ -859,13 +921,42 @@
           }
         ]
       ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Search Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response msg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Channel": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "4f4df3a6-fde1-4b30-826b-d07d3b026701",
+  "versionId": "4c5331c2-83ec-400f-aa83-c8c694b4443a",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
