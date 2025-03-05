@@ -208,7 +208,7 @@
               "id": "d61c4ddc-f021-4d86-9461-da750aec60cc",
               "name": "id",
               "value": "={{ $json.id }}",
-              "type": "string"
+              "type": "number"
             },
             {
               "id": "f1cbbba3-ba6e-4a85-8050-a78bbf98c9bf",
@@ -253,8 +253,8 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        880,
-        -1040
+        600,
+        -1020
       ],
       "id": "979733bd-3b5c-4158-853a-1008817c3693",
       "name": "Add todo",
@@ -269,13 +269,13 @@
       "parameters": {
         "collection": "todo",
         "options": {},
-        "query": "={\"channel_id\": \"{{ $json.body.channel_id }}\"}"
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -620,
-        -920
+        -700,
+        -1000
       ],
       "id": "0fcbe5df-3b47-4bf2-a31a-63a068b42a61",
       "name": "Find todo1",
@@ -286,17 +286,6 @@
           "name": "mattermost"
         }
       }
-    },
-    {
-      "parameters": {},
-      "type": "n8n-nodes-base.limit",
-      "typeVersion": 1,
-      "position": [
-        560,
-        -1020
-      ],
-      "id": "8e8e3abd-1db7-4558-82a8-ff46cc3598c5",
-      "name": "Limit"
     },
     {
       "parameters": {
@@ -349,8 +338,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -120,
-        -1100
+        -160,
+        -1120
       ],
       "id": "667cea8c-3657-449f-bef1-3c90938fa441",
       "name": "set id 1"
@@ -362,8 +351,8 @@
             {
               "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
               "name": "id",
-              "value": "={{ $('Find todo1').all().length+1 }}",
-              "type": "string"
+              "value": "={{ $json.max_id +1 }} ",
+              "type": "number"
             }
           ]
         },
@@ -372,23 +361,23 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -120,
-        -920
+        60,
+        -940
       ],
       "id": "3c9cfc00-1468-4553-8995-b3557c89ccfc",
       "name": "set id count +1"
     },
     {
       "parameters": {
-        "content": "## 實作 increment id(需要再調整為用最大值 id 往上 + 1)\n\n** 找不到 Channel todo 資料，就將 id 設定為 1\n** 找到 Channel todo 資料，就將資料設定為資料長度 +1",
-        "height": 500,
-        "width": 740
+        "content": "## 實作 increment id\n\n** id 最大值往上 + 1",
+        "height": 400,
+        "width": 560
       },
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -580,
-        -1280
+        -360,
+        -1200
       ],
       "id": "6a360d31-fca5-4c6e-aaca-2876c656460a",
       "name": "Sticky Note"
@@ -603,8 +592,8 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -880,
-        -880
+        -960,
+        -960
       ]
     },
     {
@@ -703,9 +692,69 @@
       ],
       "id": "933093f7-7792-442a-b4d4-f6f64bd73d11",
       "name": "Search Channel"
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "max",
+              "field": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        -920
+      ],
+      "id": "fe34d13b-3f26-4e4d-b986-ce9ce50afde4",
+      "name": "Get Max Id"
     }
   ],
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "connection": "close",
+            "host": "n8n.weiting.me",
+            "x-real-ip": "20.89.163.71",
+            "x-forwarded-for": "20.89.163.71",
+            "x-forwarded-proto": "https",
+            "content-length": "561",
+            "user-agent": "Mattermost-Bot/1.1",
+            "accept": "application/json",
+            "authorization": "Token rqzs9eozk3dw9kbngw6bgy8rdo",
+            "content-type": "application/x-www-form-urlencoded",
+            "accept-encoding": "gzip"
+          },
+          "params": {
+            "action": "add"
+          },
+          "query": {},
+          "body": {
+            "channel_id": "kik5etzf8tbxdg7ts1fz1ry5fa",
+            "channel_name": "devin_test_webhook",
+            "command": "/todo-add",
+            "response_url": "https://chat.gss.tw/hooks/commands/ner31gho73femdqwand9uf8uhw",
+            "team_domain": "gss",
+            "team_id": "ryrniq9s6pggfxyoniqjpisxge",
+            "text": "-c=hello",
+            "token": "rqzs9eozk3dw9kbngw6bgy8rdo",
+            "trigger_id": "MTV4N21zNWFxdGRqZmpybzZ5ZGtvcW1mb286b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTEwMzEwNDE1NTpNRVVDSUdCSVFMemNHQ2wwSjFTZDg4UHcrQnMyQUowMmFYRkF0OWU4QnlkTG96YXJBaUVBNlFSVmI1NW11cldTWnBxOER1d0krOFdqYVFNR0JRNGJjWDFaV0Yzb3hJMD0=",
+            "user_id": "okao1ypwzjbiimd5oxccq7hdch",
+            "user_name": "devin"
+          },
+          "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
+          "executionMode": "test"
+        }
+      }
+    ]
+  },
   "connections": {
     "Webhook": {
       "main": [
@@ -769,7 +818,7 @@
       "main": [
         [
           {
-            "node": "Limit",
+            "node": "Add todo",
             "type": "main",
             "index": 0
           }
@@ -787,17 +836,6 @@
         ]
       ]
     },
-    "Limit": {
-      "main": [
-        [
-          {
-            "node": "Add todo",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "If": {
       "main": [
         [
@@ -809,7 +847,7 @@
         ],
         [
           {
-            "node": "set id count +1",
+            "node": "Get Max Id",
             "type": "main",
             "index": 0
           }
@@ -950,13 +988,24 @@
           }
         ]
       ]
+    },
+    "Get Max Id": {
+      "main": [
+        [
+          {
+            "node": "set id count +1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": true,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "4c5331c2-83ec-400f-aa83-c8c694b4443a",
+  "versionId": "0c71751c-41e9-4140-865e-3a2969037063",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
