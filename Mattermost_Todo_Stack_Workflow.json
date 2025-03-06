@@ -9,10 +9,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1500,
-        480
+        -1860,
+        -720
       ],
-      "id": "6000f5ee-231b-4da9-b7f6-426123b388a1",
+      "id": "97ca5794-eb84-4c6e-bae8-228af87484a9",
       "name": "Webhook",
       "webhookId": "85de886d-2694-4df0-87b0-965db533f492"
     },
@@ -33,10 +33,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        200,
-        520
+        -160,
+        -680
       ],
-      "id": "c59cece7-0318-45e7-b69d-1eb2d12aad4f",
+      "id": "a70e682b-ba36-44aa-9879-8beb20026d09",
       "name": "Set Values1"
     },
     {
@@ -46,10 +46,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        20,
-        520
+        -340,
+        -680
       ],
-      "id": "b7b36a06-30f9-44ca-8d11-416ba93fbf20",
+      "id": "30665570-723d-4927-961a-1ba6275535d2",
       "name": "Convert to md table",
       "alwaysOutputData": true
     },
@@ -63,10 +63,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        960,
-        180
+        600,
+        -1020
       ],
-      "id": "d1ab8153-fcff-4604-a503-9a6ddc21ee93",
+      "id": "979733bd-3b5c-4158-853a-1008817c3693",
       "name": "Add todo",
       "credentials": {
         "mongoDb": {
@@ -84,10 +84,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        0,
-        0
+        -360,
+        -1200
       ],
-      "id": "c79f8ad4-8a6d-47de-b5d6-87b9d559dd63",
+      "id": "6a360d31-fca5-4c6e-aaca-2876c656460a",
       "name": "Sticky Note"
     },
     {
@@ -99,10 +99,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        680,
-        520
+        320,
+        -680
       ],
-      "id": "6ab876fd-5b04-4f35-9e52-2c68b1c1758b",
+      "id": "354747f1-c745-426d-92a5-1c6901d8f75a",
       "name": "Sticky Note1"
     },
     {
@@ -114,10 +114,10 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        60,
-        700
+        -300,
+        -500
       ],
-      "id": "de0881db-c8b0-49e5-8ad6-bccd90595395",
+      "id": "145fd276-ed55-4dea-9481-c9969a4ab16f",
       "name": "Sticky Note2"
     },
     {
@@ -129,10 +129,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -560,
-        740
+        -920,
+        -460
       ],
-      "id": "9cb36067-d3bd-4a73-88a5-5f57756e5f68",
+      "id": "d2edf223-4aab-4c05-97dc-a7bb0a065151",
       "name": "Find Todo By Id",
       "credentials": {
         "mongoDb": {
@@ -150,10 +150,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -240,
-        440
+        -600,
+        -760
       ],
-      "id": "f03378c1-a272-4598-975e-296319e666d5",
+      "id": "41d214e5-9c40-4e94-8432-3f4314ffaaa9",
       "name": "Find Undone Todo",
       "credentials": {
         "mongoDb": {
@@ -171,10 +171,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -240,
-        600
+        -600,
+        -600
       ],
-      "id": "f3d63621-176e-42d9-8b9e-c4a4f8c6451d",
+      "id": "60848a0d-dd7f-41f5-86e8-eb54c9730608",
       "name": "Find All Todo",
       "credentials": {
         "mongoDb": {
@@ -185,15 +185,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w@.]+)|-([\\w])=([\\w@.]+)/g;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    const value = matches[2] || matches[4]; // Get the associated value\n\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
+        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w\\s!@#$%^&*()\\p{L}.]+)|-([\\w])=([\\w\\s!@#$%^&*()\\p{L}.]+)/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
       },
-      "id": "89bdd5c2-2b0a-49aa-abf6-991ab41df1c2",
+      "id": "0d0229f7-4318-4675-b290-c4b80d9d9bb4",
       "name": "Todo Creation Arg Converter",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -600,
-        240
+        -960,
+        -960
       ]
     },
     {
@@ -211,10 +211,10 @@
       "type": "n8n-nodes-base.summarize",
       "typeVersion": 1.1,
       "position": [
-        200,
-        280
+        -160,
+        -920
       ],
-      "id": "28ad9945-ac92-46fe-9a25-bff34d1f42aa",
+      "id": "fe34d13b-3f26-4e4d-b986-ce9ce50afde4",
       "name": "Get Max Id"
     },
     {
@@ -226,10 +226,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -340,
-        200
+        -700,
+        -1000
       ],
-      "id": "dedf614e-7fea-468d-810a-c870bb23e616",
+      "id": "0fcbe5df-3b47-4bf2-a31a-63a068b42a61",
       "name": "Find All Existed Todo",
       "alwaysOutputData": true,
       "credentials": {
@@ -256,10 +256,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -240,
-        740
+        -600,
+        -460
       ],
-      "id": "08f6b0d1-13ca-4f9e-9ad2-f5722e15ae10",
+      "id": "e39c04cb-b74a-4a02-9cba-f6f4d8ca4491",
       "name": "Set Id Field"
     },
     {
@@ -285,10 +285,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        120,
-        740
+        -240,
+        -460
       ],
-      "id": "5445eed4-cbce-4f6c-987b-2d05fe29facc",
+      "id": "0b52d935-77b0-471a-9876-bc6764701392",
       "name": "Set Id & Replace \""
     },
     {
@@ -302,10 +302,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        380,
-        740
+        20,
+        -460
       ],
-      "id": "627e5ce1-2ac5-4568-a2e2-16e4f96b53da",
+      "id": "3cc61c73-99a3-41c1-9960-179ce6b8e800",
       "name": "Complete Todo",
       "credentials": {
         "mongoDb": {
@@ -341,10 +341,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -600,
-        480
+        -960,
+        -720
       ],
-      "id": "574c14a5-b501-4d59-a893-36d14d3e2092",
+      "id": "9520a01a-69f8-4632-ae7c-c33a1d8c8aa8",
       "name": "If Not List All"
     },
     {
@@ -374,10 +374,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        400,
-        520
+        40,
+        -680
       ],
-      "id": "906209e9-c40c-4170-ba4d-824a8ff24860",
+      "id": "6115fc56-2ba0-4f45-a557-3d2f4bad0610",
       "name": "If Silent"
     },
     {
@@ -411,10 +411,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        800,
-        600
+        440,
+        -600
       ],
-      "id": "36504737-88b0-4e81-9637-087d9b72e707",
+      "id": "da3935e7-a221-4a94-a571-2a8f6ab31fb9",
       "name": "Response to Channel"
     },
     {
@@ -434,10 +434,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        820,
-        340
+        460,
+        -860
       ],
-      "id": "b2c0fafd-7529-4415-b717-93f0bfe3a500",
+      "id": "933093f7-7792-442a-b4d4-f6f64bd73d11",
       "name": "Search Personal Channel"
     },
     {
@@ -475,10 +475,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1160,
-        340
+        800,
+        -860
       ],
-      "id": "74d26395-7706-40d4-b8c5-91278160d58f",
+      "id": "9d416e5f-e729-48aa-bfa2-9674aeaedbb8",
       "name": "Response To Personal Channel"
     },
     {
@@ -498,10 +498,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        420,
-        280
+        60,
+        -920
       ],
-      "id": "e9647aca-c955-4e10-9da6-975c4c0de68d",
+      "id": "3c9cfc00-1468-4553-8995-b3557c89ccfc",
       "name": "Set Max ID + 1"
     },
     {
@@ -563,10 +563,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        640,
-        180
+        280,
+        -1020
       ],
-      "id": "fb245877-760d-4bd0-9470-f655b5fdbf22",
+      "id": "b23e247d-80d8-45b0-a87e-e495dfc743e4",
       "name": "Set Insert Values",
       "alwaysOutputData": true,
       "onError": "continueRegularOutput"
@@ -588,10 +588,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        200,
-        80
+        -160,
+        -1120
       ],
-      "id": "6d5556be-2476-4827-a74a-fd98c8f37f2f",
+      "id": "667cea8c-3657-449f-bef1-3c90938fa441",
       "name": "Set Id 1"
     },
     {
@@ -622,10 +622,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        0,
-        200
+        -360,
+        -1000
       ],
-      "id": "8fcbbf8b-7c87-42f8-97a5-84235090d9ab",
+      "id": "96f6d151-038f-4728-8c37-baba53c6f72b",
       "name": "If Exists Todo"
     },
     {
@@ -707,10 +707,10 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -1160,
-        480
+        -1520,
+        -720
       ],
-      "id": "280d8dc5-adaa-432c-b56c-948b5064a976",
+      "id": "988da9de-5bcb-42da-9cfa-d9ba91f35ba5",
       "name": "Determine Action"
     }
   ],
@@ -962,6 +962,7 @@
   },
   "pinData": {},
   "meta": {
+    "templateCredsSetupCompleted": true,
     "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
   }
 }
