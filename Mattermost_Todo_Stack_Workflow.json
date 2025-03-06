@@ -19,6 +19,641 @@
     },
     {
       "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d5c4504-db56-4c3b-8ccb-00045ff453f8",
+              "name": "markdownTable",
+              "value": "={{ $json.markdownTable }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -680
+      ],
+      "id": "a70e682b-ba36-44aa-9879-8beb20026d09",
+      "name": "Set Values1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -340,
+        -680
+      ],
+      "id": "30665570-723d-4927-961a-1ba6275535d2",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "todo",
+        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        -1020
+      ],
+      "id": "979733bd-3b5c-4158-853a-1008817c3693",
+      "name": "Add todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 實作 increment id\n\n** id 最大值往上 + 1",
+        "height": 400,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -360,
+        -1200
+      ],
+      "id": "6a360d31-fca5-4c6e-aaca-2876c656460a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "透過 body parameter 的方式，避免使用 json \\n 會直接被 evaluate 導致回傳後 json 格式出錯\n",
+        "height": 280,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        320,
+        -680
+      ],
+      "id": "354747f1-c745-426d-92a5-1c6901d8f75a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "\n## avoid double quote",
+        "height": 260,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -300,
+        -500
+      ],
+      "id": "145fd276-ed55-4dea-9481-c9969a4ab16f",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"},{\"id\":{{ $json.body.text }}}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        -460
+      ],
+      "id": "d2edf223-4aab-4c05-97dc-a7bb0a065151",
+      "name": "Find Todo By Id",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"},{\"done\":\":x:\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        -760
+      ],
+      "id": "41d214e5-9c40-4e94-8432-3f4314ffaaa9",
+      "name": "Find Undone Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        -600
+      ],
+      "id": "60848a0d-dd7f-41f5-86e8-eb54c9730608",
+      "name": "Find All Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w@.]+)|-([\\w])=([\\w@.]+)/g;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    const value = matches[2] || matches[4]; // Get the associated value\n\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
+      },
+      "id": "0d0229f7-4318-4675-b290-c4b80d9d9bb4",
+      "name": "Todo Creation Arg Converter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -960
+      ]
+    },
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "max",
+              "field": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        -160,
+        -920
+      ],
+      "id": "fe34d13b-3f26-4e4d-b986-ce9ce50afde4",
+      "name": "Get Max Id"
+    },
+    {
+      "parameters": {
+        "url": "https://chat.gss.tw/api/v4/users/me/channels",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -860,
+        60
+      ],
+      "id": "e8bae2b8-6e8c-495a-ae23-66f8493c4f38",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -700,
+        -1000
+      ],
+      "id": "0fcbe5df-3b47-4bf2-a31a-63a068b42a61",
+      "name": "Find All Existed Todo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10f4ab02-7c65-49d2-9f8b-3be363f5a408",
+              "name": "_id",
+              "value": "={{ $json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -600,
+        -460
+      ],
+      "id": "e39c04cb-b74a-4a02-9cba-f6f4d8ca4491",
+      "name": "Set Id Field"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9739ca52-42f0-4775-b251-c0db1058b0d4",
+              "name": "_id",
+              "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "b6adae5e-4c7c-49b1-935e-cad4490d23c8",
+              "name": "done",
+              "value": "=:white_check_mark:",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -240,
+        -460
+      ],
+      "id": "0b52d935-77b0-471a-9876-bc6764701392",
+      "name": "Set Id & Replace \""
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "todo",
+        "updateKey": "=_id",
+        "fields": "done",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        20,
+        -460
+      ],
+      "id": "3cc61c73-99a3-41c1-9960-179ce6b8e800",
+      "name": "Complete Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fac1d067-0739-409f-a012-97353e7a9dd1",
+              "leftValue": "={{ $json.body.text }}",
+              "rightValue": "all",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -960,
+        -720
+      ],
+      "id": "9520a01a-69f8-4632-ae7c-c33a1d8c8aa8",
+      "name": "If Not List All"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bfb8506d-965f-492d-bb95-1f03d388722f",
+              "leftValue": "={{ $('Webhook').first().json.body.text }}",
+              "rightValue": "--silent",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        40,
+        -680
+      ],
+      "id": "6115fc56-2ba0-4f45-a557-3d2f4bad0610",
+      "name": "If Silent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').first().json.body.response_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Token s5cp3xebgbyiun1rncn4bmgw9o"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.markdownTable }}"
+            },
+            {
+              "name": "response_type",
+              "value": "in_channel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        -600
+      ],
+      "id": "da3935e7-a221-4a94-a571-2a8f6ab31fb9",
+      "name": "Response to Channel"
+    },
+    {
+      "parameters": {
+        "url": "=https://chat.gss.tw/api/v4/teams/ryrniq9s6pggfxyoniqjpisxge/channels/name/{{ $('Webhook').first().json.body.user_id }}__{{ $('Webhook').first().json.body.user_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "MMAUTHTOKEN=a8ykq3d9q7dd3rodf5fuqchaur; MMUSERID=okao1ypwzjbiimd5oxccq7hdch; MMCSRF=qqem4zzhtjdbpbycf68djbu8tw; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FNVG3dPwxfhdchkanpk4SkEU4KlzotB0Q%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Wa0qeMbhrm%2Fv4F9mqPFTduKD0dddkUO0%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FChpwGOIWXqBFHqk5Zr3PPUCKtUW00O708PRLDmTah3Y7DbvemNWXDn3WT4HBDhqiSpulP3Q32Sg%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19bFnt0RyJrPC2HTFcJPMcWKlJ5HhQb1Xw%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX19ckZI0TGBCaDpItPmTFcpZolqR8sRkc%2FY%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BtuzH4miurhhPqV%2Fvd%2FakDQj0O%2B6YWO3W7QOQM6pXoOY2GOt6epGQE; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FCUHvlwNTZOS0RDiDdDf%2FW89N5xSP5Qkc%3D"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        -860
+      ],
+      "id": "933093f7-7792-442a-b4d4-f6f64bd73d11",
+      "name": "Search Personal Channel"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Cookie",
+              "value": "MMAUTHTOKEN=a8ykq3d9q7dd3rodf5fuqchaur; MMUSERID=okao1ypwzjbiimd5oxccq7hdch; MMCSRF=qqem4zzhtjdbpbycf68djbu8tw; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FNVG3dPwxfhdchkanpk4SkEU4KlzotB0Q%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Wa0qeMbhrm%2Fv4F9mqPFTduKD0dddkUO0%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FChpwGOIWXqBFHqk5Zr3PPUCKtUW00O708PRLDmTah3Y7DbvemNWXDn3WT4HBDhqiSpulP3Q32Sg%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19bFnt0RyJrPC2HTFcJPMcWKlJ5HhQb1Xw%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX19ckZI0TGBCaDpItPmTFcpZolqR8sRkc%2FY%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BtuzH4miurhhPqV%2Fvd%2FakDQj0O%2B6YWO3W7QOQM6pXoOY2GOt6epGQE; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FCUHvlwNTZOS0RDiDdDf%2FW89N5xSP5Qkc%3D"
+            },
+            {
+              "name": "X-Csrf-Token",
+              "value": "qqem4zzhtjdbpbycf68djbu8tw"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "message",
+              "value": "={{ $('Convert to md table').item.json.markdownTable }}"
+            },
+            {
+              "name": "channel_id",
+              "value": "={{ $json.id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        800,
+        -860
+      ],
+      "id": "9d416e5f-e729-48aa-bfa2-9674aeaedbb8",
+      "name": "Response To Personal Channel"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "={{ $json.max_id +1 }} ",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        -920
+      ],
+      "id": "3c9cfc00-1468-4553-8995-b3557c89ccfc",
+      "name": "Set Max ID + 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
+              "name": "channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "00e7ba5e-5c2c-40a8-bbde-10562f7b7949",
+              "name": "text",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "1e7580ec-82af-4669-8882-03ce3c2c224e",
+              "name": "user_name",
+              "value": "={{ $('Webhook').item.json.body.user_name }}",
+              "type": "string"
+            },
+            {
+              "id": "df68d03b-1adb-4395-97e6-9192cd025377",
+              "name": "user_id",
+              "value": "={{ $('Webhook').item.json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "d61c4ddc-f021-4d86-9461-da750aec60cc",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "f1cbbba3-ba6e-4a85-8050-a78bbf98c9bf",
+              "name": "done",
+              "value": ":x:",
+              "type": "string"
+            },
+            {
+              "id": "c00560b1-83ba-4de6-a7ae-5f06270689f8",
+              "name": "=assignee",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.assignee }}",
+              "type": "string"
+            },
+            {
+              "id": "a2048aa9-a5b0-4ac1-be6e-5cfcce86457b",
+              "name": "priority",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.priority }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        280,
+        -1020
+      ],
+      "id": "b23e247d-80d8-45b0-a87e-e495dfc743e4",
+      "name": "Set Insert Values",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -1120
+      ],
+      "id": "667cea8c-3657-449f-bef1-3c90938fa441",
+      "name": "Set Id 1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e894ab39-3f0e-4751-aac7-d796b3e8180f",
+              "leftValue": "={{ $('Find All Existed Todo').item.json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -360,
+        -1000
+      ],
+      "id": "96f6d151-038f-4728-8c37-baba53c6f72b",
+      "name": "If Exists Todo"
+    },
+    {
+      "parameters": {
         "rules": {
           "values": [
             {
@@ -760,7 +1395,7 @@
       "main": [
         [
           {
-            "node": "Switch",
+            "node": "Determine Action",
             "type": "main",
             "index": 0
           }
@@ -814,7 +1449,7 @@
         ]
       ]
     },
-    "Set values": {
+    "Find Todo By Id": {
       "main": [
         [
           {
@@ -825,11 +1460,11 @@
         ]
       ]
     },
-    "Find todo1": {
+    "Find All Todo": {
       "main": [
         [
           {
-            "node": "If",
+            "node": "Convert to md table",
             "type": "main",
             "index": 0
           }
@@ -840,7 +1475,18 @@
       "main": [
         [
           {
-            "node": "set id 1",
+            "node": "Set Insert Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Exists Todo": {
+      "main": [
+        [
+          {
+            "node": "Set Id 1",
             "type": "main",
             "index": 0
           }
@@ -854,22 +1500,25 @@
         ]
       ]
     },
-    "set id 1": {
+    "Determine Action": {
       "main": [
         [
           {
-            "node": "Set values",
+            "node": "Todo Creation Arg Converter",
             "type": "main",
             "index": 0
           }
-        ]
-      ]
-    },
-    "set id count +1": {
-      "main": [
+        ],
         [
           {
-            "node": "Set values",
+            "node": "If Not List All",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Todo By Id",
             "type": "main",
             "index": 0
           }
