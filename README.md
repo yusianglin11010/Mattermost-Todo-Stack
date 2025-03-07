@@ -1,4 +1,7 @@
-# ✅ Mattermost To-Do Bot Commands(Spec Draft)
+# ✅ Mattermost To-Do Bot Commands(Draft Spec)
+
+![mattermost_n8n_repo_cover](https://github.com/user-attachments/assets/82e98729-78d8-40db-bbf6-ff016c5876fe)
+
 
 Welcome to your To-Do Bot! This is a n8n workflow integrated mattermost slash command to record your to-dos.
 🚀 Below is the complete guide to all the bot commands, helping you manage your tasks efficiently.
