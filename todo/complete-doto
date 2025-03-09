@@ -1,0 +1,216 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1080,
+        -100
+      ],
+      "id": "54cf16cf-48d2-4354-b89c-42a43e4252a1",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.body.channel_id }}\"},{\"id\":{{ $json.body.text }}}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1280,
+        -100
+      ],
+      "id": "d2e5f0dd-3c85-459d-9e75-b6bcdf2a5ba5",
+      "name": "Find Todo By Id",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "10f4ab02-7c65-49d2-9f8b-3be363f5a408",
+              "name": "_id",
+              "value": "={{ $json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1480,
+        -100
+      ],
+      "id": "9d0c4e63-8bf2-422e-9f6e-d9a7122c8fad",
+      "name": "Set Id Field"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9739ca52-42f0-4775-b251-c0db1058b0d4",
+              "name": "_id",
+              "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+              "type": "string"
+            },
+            {
+              "id": "b6adae5e-4c7c-49b1-935e-cad4490d23c8",
+              "name": "done",
+              "value": "=:white_check_mark:",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1680,
+        -100
+      ],
+      "id": "6bc0af24-3515-4f60-9088-14af1b09d638",
+      "name": "Set Id & Replace \""
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "todo",
+        "updateKey": "=_id",
+        "fields": "done",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1880,
+        -100
+      ],
+      "id": "e4324323-7ec9-49f7-a972-1f13b8ec369c",
+      "name": "Complete Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "mpJVL6vUNDV3B35S",
+          "name": "mattermost"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "\n## avoid double quote",
+        "height": 260,
+        "width": 300
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1580,
+        -160
+      ],
+      "id": "41a52ce4-9c46-4dfc-9ba6-98e20cad8008",
+      "name": "Sticky Note2"
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Find Todo By Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Todo By Id": {
+      "main": [
+        [
+          {
+            "node": "Set Id Field",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Id Field": {
+      "main": [
+        [
+          {
+            "node": "Set Id & Replace \"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Id & Replace \"": {
+      "main": [
+        [
+          {
+            "node": "Complete Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "headers": {
+          "connection": "close",
+          "host": "n8n.weiting.me",
+          "x-real-ip": "20.89.163.71",
+          "x-forwarded-for": "20.89.163.71",
+          "x-forwarded-proto": "https",
+          "content-length": "589",
+          "user-agent": "Mattermost-Bot/1.1",
+          "accept": "application/json",
+          "authorization": "Token 5kmp7dby4pgc7x4qg7q8tgi8ja",
+          "content-type": "application/x-www-form-urlencoded",
+          "accept-encoding": "gzip"
+        },
+        "params": {
+          "action": "done"
+        },
+        "query": {},
+        "body": {
+          "channel_id": "914h5rypyp8f58hknyhuqkq1se",
+          "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
+          "command": "/todo-done",
+          "response_url": "https://chat.gss.tw/hooks/commands/emnwd8q68tgfpcmb6rmmr9ufcr",
+          "team_domain": "gss",
+          "team_id": "ryrniq9s6pggfxyoniqjpisxge",
+          "text": "2",
+          "token": "5kmp7dby4pgc7x4qg7q8tgi8ja",
+          "trigger_id": "Z21ib2Fvcjd5anJyN2JiZmZuajM3NnVqOWg6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTQ1MDE0NjEyOTpNRVVDSUhZYURKUXhheXplZzZmOG5Wait3UlRUVVhnaVhnNXpmZGg3Mm01YytjbVVBaUVBOEZLM3M5c3lkMkJybzlUNUhtLzZwb3pLSDdHa1NMTnkwTGFqZFo5RDVqVT0=",
+          "user_id": "okao1ypwzjbiimd5oxccq7hdch",
+          "user_name": "devin"
+        },
+        "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
+        "executionMode": "test"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
+  }
+}
