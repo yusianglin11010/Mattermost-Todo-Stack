@@ -1,0 +1,277 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "mattermost/todos/:action",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -1860,
+          -720
+        ],
+        "id": "97ca5794-eb84-4c6e-bae8-228af87484a9",
+        "name": "Webhook",
+        "webhookId": "85de886d-2694-4df0-87b0-965db533f492"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "={{ $json.params.action }}",
+                      "rightValue": "add",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "e9d2ff7f-314a-438e-af23-60b23248b274"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "c9834751-9110-4926-975e-794d353aca3a",
+                      "leftValue": "={{ $json.params.action }}",
+                      "rightValue": "list",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 2
+                  },
+                  "conditions": [
+                    {
+                      "id": "dfa382bb-fb0c-47b4-9f15-4fc09d0f4c57",
+                      "leftValue": "={{ $json.params.action }}",
+                      "rightValue": "done",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.2,
+        "position": [
+          -1520,
+          -720
+        ],
+        "id": "988da9de-5bcb-42da-9cfa-d9ba91f35ba5",
+        "name": "Determine Action"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "u5tJR2g5qvKQANij",
+            "mode": "list",
+            "cachedResultName": "Complete Todo"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -1060,
+          -520
+        ],
+        "id": "91352563-c212-44e6-8f8f-1fa6df90e4bd",
+        "name": "Execute Complete Todo Workflow"
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "AJhPRYl9JicRTCkR",
+            "mode": "list",
+            "cachedResultName": "Add Todo"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -1060,
+          -900
+        ],
+        "id": "114c63aa-5764-4af8-abb2-9885672ebc34",
+        "name": "Add Todo",
+        "alwaysOutputData": true
+      },
+      {
+        "parameters": {
+          "workflowId": {
+            "__rl": true,
+            "value": "PfmIWHcU4SAdaMPL",
+            "mode": "list",
+            "cachedResultName": "List Todo"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": true
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.executeWorkflow",
+        "typeVersion": 1.2,
+        "position": [
+          -1060,
+          -720
+        ],
+        "id": "1fb541bc-4b8d-4cdd-ab32-cfe7be3825df",
+        "name": "Execute Workflow"
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Determine Action",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Determine Action": {
+        "main": [
+          [
+            {
+              "node": "Add Todo",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execute Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Execute Complete Todo Workflow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Todo": {
+        "main": [
+          []
+        ]
+      },
+      "Execute Workflow": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "pinData": {
+      "Webhook": [
+        {
+          "headers": {
+            "connection": "close",
+            "host": "n8n.weiting.me",
+            "x-real-ip": "20.89.163.71",
+            "x-forwarded-for": "20.89.163.71",
+            "x-forwarded-proto": "https",
+            "content-length": "588",
+            "user-agent": "Mattermost-Bot/1.1",
+            "accept": "application/json",
+            "authorization": "Token s5cp3xebgbyiun1rncn4bmgw9o",
+            "content-type": "application/x-www-form-urlencoded",
+            "accept-encoding": "gzip"
+          },
+          "params": {
+            "action": "list"
+          },
+          "query": {},
+          "body": {
+            "channel_id": "914h5rypyp8f58hknyhuqkq1se",
+            "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
+            "command": "/todo-list",
+            "response_url": "https://chat.gss.tw/hooks/commands/ajqgsxzo6idcxromp94iz5ddmc",
+            "team_domain": "gss",
+            "team_id": "ryrniq9s6pggfxyoniqjpisxge",
+            "text": "",
+            "token": "s5cp3xebgbyiun1rncn4bmgw9o",
+            "trigger_id": "YXpmZ2RqdDlxcGdlem1oNWp6b29ueGJ5eWM6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTQ1OTIzNTI5MDpNRVVDSVFDRGMyaGVBdDFzNEtBcjVFUlNDK0lyQjBNaFB5NnR5dDlrZ2ZBZG5YT1Z5d0lnZTFLMlJrTGRPYTRST1l4TDNKOGRWdU9EKzRTWVM4WWNtRkpha1RBd0d5Zz0=",
+            "user_id": "okao1ypwzjbiimd5oxccq7hdch",
+            "user_name": "devin"
+          },
+          "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
+          "executionMode": "test"
+        }
+      ]
+    },
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
+    }
+  }
