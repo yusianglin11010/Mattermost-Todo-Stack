@@ -1,386 +1,442 @@
 {
-    "nodes": [
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "9d5c4504-db56-4c3b-8ccb-00045ff453f8",
-                "name": "markdownTable",
-                "value": "={{ $json.markdownTable }}",
-                "type": "string"
-              }
-            ]
-          },
-          "options": {}
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d5c4504-db56-4c3b-8ccb-00045ff453f8",
+              "name": "markdownTable",
+              "value": "={{ $json.markdownTable }}",
+              "type": "string"
+            }
+          ]
         },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [
-          1040,
-          40
-        ],
-        "id": "2afaa571-af68-425a-aac9-b4831d491ab6",
-        "name": "Set Values1"
+        "options": {}
       },
-      {
-        "parameters": {
-          "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          860,
-          40
-        ],
-        "id": "2ff9428e-3167-4892-981f-e25d6597ae87",
-        "name": "Convert to md table",
-        "alwaysOutputData": true
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -760,
+        0
+      ],
+      "id": "b91da985-f61b-4312-b12d-3f766599969c",
+      "name": "Set Values1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
       },
-      {
-        "parameters": {
-          "content": "透過 body parameter 的方式，避免使用 json \\n 會直接被 evaluate 導致回傳後 json 格式出錯\n",
-          "height": 280,
-          "width": 380
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          1420,
-          80
-        ],
-        "id": "b9721639-2ce0-44a3-a5cc-d73956c57e2d",
-        "name": "Sticky Note1"
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -940,
+        0
+      ],
+      "id": "c5636d9f-536e-4bda-89b1-49dc3b4a8e07",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "透過 body parameter 的方式，避免使用 json \\n 會直接被 evaluate 導致回傳後 json 格式出錯\n",
+        "height": 280,
+        "width": 380
       },
-      {
-        "parameters": {
-          "collection": "todo",
-          "options": {},
-          "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"},{\"done\":\":x:\"}]}"
-        },
-        "type": "n8n-nodes-base.mongoDb",
-        "typeVersion": 1.1,
-        "position": [
-          600,
-          -40
-        ],
-        "id": "a2d400ad-92ce-4711-8067-91ab0ebeca27",
-        "name": "Find Undone Todo",
-        "credentials": {
-          "mongoDb": {
-            "id": "mpJVL6vUNDV3B35S",
-            "name": "mattermost"
-          }
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -380,
+        40
+      ],
+      "id": "0acb814b-c20f-4cb7-a00f-82cb4592aee8",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Set Variable').item.json.channel_id }}\"},{\"done\":\":x:\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        -80
+      ],
+      "id": "b78797aa-1623-4790-86bd-f61ecb7550a1",
+      "name": "Find Undone Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
         }
-      },
-      {
-        "parameters": {
-          "collection": "todo",
-          "options": {},
-          "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
-        },
-        "type": "n8n-nodes-base.mongoDb",
-        "typeVersion": 1.1,
-        "position": [
-          600,
-          120
-        ],
-        "id": "5334e170-8124-43fa-8cdc-9246b5199705",
-        "name": "Find All Todo",
-        "credentials": {
-          "mongoDb": {
-            "id": "mpJVL6vUNDV3B35S",
-            "name": "mattermost"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "fac1d067-0739-409f-a012-97353e7a9dd1",
-                "leftValue": "={{ $json.body.text }}",
-                "rightValue": "all",
-                "operator": {
-                  "type": "string",
-                  "operation": "notEquals"
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          240,
-          0
-        ],
-        "id": "d5566ec6-03e1-4f45-a3ef-0f664b9701b4",
-        "name": "If Not List All"
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "bfb8506d-965f-492d-bb95-1f03d388722f",
-                "leftValue": "={{ $('Webhook').first().json.body.text }}",
-                "rightValue": "--silent",
-                "operator": {
-                  "type": "string",
-                  "operation": "notContains"
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          1240,
-          40
-        ],
-        "id": "892f2473-f955-489f-9f78-c125f086d5c3",
-        "name": "If Silent"
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "={{ $('Webhook').first().json.body.response_url }}",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Authorization",
-                "value": "Token s5cp3xebgbyiun1rncn4bmgw9o"
-              }
-            ]
-          },
-          "sendBody": true,
-          "bodyParameters": {
-            "parameters": [
-              {
-                "name": "text",
-                "value": "={{ $json.markdownTable }}"
-              },
-              {
-                "name": "response_type",
-                "value": "in_channel"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
-        "position": [
-          1540,
-          180
-        ],
-        "id": "f780906c-eb1d-4ee9-a3de-9ef1de92fdc2",
-        "name": "Response to Channel"
-      },
-      {
-        "parameters": {
-          "url": "=https://chat.gss.tw/api/v4/teams/ryrniq9s6pggfxyoniqjpisxge/channels/name/{{ $('Webhook').first().json.body.user_id }}__{{ $('Webhook').first().json.body.user_id }}",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Cookie",
-                "value": "MMAUTHTOKEN=a8ykq3d9q7dd3rodf5fuqchaur; MMUSERID=okao1ypwzjbiimd5oxccq7hdch; MMCSRF=qqem4zzhtjdbpbycf68djbu8tw; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FNVG3dPwxfhdchkanpk4SkEU4KlzotB0Q%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Wa0qeMbhrm%2Fv4F9mqPFTduKD0dddkUO0%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FChpwGOIWXqBFHqk5Zr3PPUCKtUW00O708PRLDmTah3Y7DbvemNWXDn3WT4HBDhqiSpulP3Q32Sg%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19bFnt0RyJrPC2HTFcJPMcWKlJ5HhQb1Xw%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX19ckZI0TGBCaDpItPmTFcpZolqR8sRkc%2FY%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BtuzH4miurhhPqV%2Fvd%2FakDQj0O%2B6YWO3W7QOQM6pXoOY2GOt6epGQE; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FCUHvlwNTZOS0RDiDdDf%2FW89N5xSP5Qkc%3D"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
-        "position": [
-          1480,
-          -80
-        ],
-        "id": "375a4700-edb8-4365-8d3e-9dd8a2a5775c",
-        "name": "Search Personal Channel"
-      },
-      {
-        "parameters": {
-          "method": "POST",
-          "url": "https://chat.gss.tw/api/v4/posts",
-          "sendHeaders": true,
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "Cookie",
-                "value": "MMAUTHTOKEN=a8ykq3d9q7dd3rodf5fuqchaur; MMUSERID=okao1ypwzjbiimd5oxccq7hdch; MMCSRF=qqem4zzhtjdbpbycf68djbu8tw; rl_page_init_referrer=RudderEncrypt%3AU2FsdGVkX1%2FNVG3dPwxfhdchkanpk4SkEU4KlzotB0Q%3D; rl_page_init_referring_domain=RudderEncrypt%3AU2FsdGVkX19Wa0qeMbhrm%2Fv4F9mqPFTduKD0dddkUO0%3D; rl_anonymous_id=RudderEncrypt%3AU2FsdGVkX1%2FChpwGOIWXqBFHqk5Zr3PPUCKtUW00O708PRLDmTah3Y7DbvemNWXDn3WT4HBDhqiSpulP3Q32Sg%3D%3D; rl_group_id=RudderEncrypt%3AU2FsdGVkX19bFnt0RyJrPC2HTFcJPMcWKlJ5HhQb1Xw%3D; rl_group_trait=RudderEncrypt%3AU2FsdGVkX19ckZI0TGBCaDpItPmTFcpZolqR8sRkc%2FY%3D; rl_user_id=RudderEncrypt%3AU2FsdGVkX1%2BtuzH4miurhhPqV%2Fvd%2FakDQj0O%2B6YWO3W7QOQM6pXoOY2GOt6epGQE; rl_trait=RudderEncrypt%3AU2FsdGVkX1%2FCUHvlwNTZOS0RDiDdDf%2FW89N5xSP5Qkc%3D"
-              },
-              {
-                "name": "X-Csrf-Token",
-                "value": "qqem4zzhtjdbpbycf68djbu8tw"
-              }
-            ]
-          },
-          "sendBody": true,
-          "bodyParameters": {
-            "parameters": [
-              {
-                "name": "message",
-                "value": "={{ $('Convert to md table').item.json.markdownTable }}"
-              },
-              {
-                "name": "channel_id",
-                "value": "={{ $json.id }}"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.2,
-        "position": [
-          1720,
-          -80
-        ],
-        "id": "099cb01e-d314-4f14-8a0b-f2ca662f9b9f",
-        "name": "Response To Personal Channel"
-      },
-      {
-        "parameters": {
-          "inputSource": "passthrough"
-        },
-        "type": "n8n-nodes-base.executeWorkflowTrigger",
-        "typeVersion": 1.1,
-        "position": [
-          0,
-          0
-        ],
-        "id": "c591ac0b-14c5-42f9-bc18-ad70e5e7ff20",
-        "name": "Webhook"
-      }
-    ],
-    "connections": {
-      "Set Values1": {
-        "main": [
-          [
-            {
-              "node": "If Silent",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Convert to md table": {
-        "main": [
-          [
-            {
-              "node": "Set Values1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Find Undone Todo": {
-        "main": [
-          [
-            {
-              "node": "Convert to md table",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Find All Todo": {
-        "main": [
-          [
-            {
-              "node": "Convert to md table",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "If Not List All": {
-        "main": [
-          [
-            {
-              "node": "Find Undone Todo",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Find All Todo",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "If Silent": {
-        "main": [
-          [
-            {
-              "node": "Search Personal Channel",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Response to Channel",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Search Personal Channel": {
-        "main": [
-          [
-            {
-              "node": "Response To Personal Channel",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook": {
-        "main": [
-          [
-            {
-              "node": "If Not List All",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
-    "pinData": {},
-    "meta": {
-      "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -1200,
+        80
+      ],
+      "id": "24e9ca34-395c-4d36-997e-4dfa49753baf",
+      "name": "Find All Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "fac1d067-0739-409f-a012-97353e7a9dd1",
+              "leftValue": "={{ $json.body.text }}",
+              "rightValue": "all",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1580,
+        60
+      ],
+      "id": "b9b09da9-14c1-4932-b7eb-ef55b43032a4",
+      "name": "If Not List All"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').first().json.body.response_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Token s5cp3xebgbyiun1rncn4bmgw9o"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.markdownTable }}"
+            },
+            {
+              "name": "response_type",
+              "value": "in_channel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -260,
+        140
+      ],
+      "id": "2edf6832-ecf4-4f5b-93cf-50023bbc806a",
+      "name": "Response to Channel"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2140,
+        -40
+      ],
+      "id": "fc4b334f-986b-424f-87b1-6fedacc73df8",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "919e326c-5db1-4f89-9e8b-e10af051e807",
+              "leftValue": "={{ $json.from_remind }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1800,
+        -40
+      ],
+      "id": "3c679c47-3a55-4c1d-9617-fd47c0ac9ace",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "96a4bc1a-f3ea-4f0d-9840-59cf6c49cb53",
+              "name": "channel_id",
+              "value": "={{ $json.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "ada922db-8947-4d2c-b912-cbcd77c909b6",
+              "name": "from_remind",
+              "value": "={{ $json.from_remind }}",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1980,
+        -40
+      ],
+      "id": "825f82b9-225c-4abb-9b4b-313fc21f17c3",
+      "name": "Set Variable"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel_id",
+              "value": "={{ $('Set Variable').first().json.channel_id }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $('Convert to md table').first().json.markdownTable }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -280,
+        -120
+      ],
+      "id": "11331f0d-1a60-4387-a6c6-e6c146d9bdf0",
+      "name": "Post msg"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bfb8506d-965f-492d-bb95-1f03d388722f",
+              "leftValue": "={{ $('Set Variable').first().json.from_remind }}",
+              "rightValue": "--silent",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -560,
+        0
+      ],
+      "id": "48c325e8-fcf1-4a0e-8492-c0850ddb743b",
+      "name": "If From Remind"
     }
+  ],
+  "connections": {
+    "Set Values1": {
+      "main": [
+        [
+          {
+            "node": "If From Remind",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to md table": {
+      "main": [
+        [
+          {
+            "node": "Set Values1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Undone Todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find All Todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Not List All": {
+      "main": [
+        [
+          {
+            "node": "Find Undone Todo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find All Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Set Variable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Find Undone Todo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "If Not List All",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variable": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If From Remind": {
+      "main": [
+        [
+          {
+            "node": "Post msg",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response to Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
   }
+}
