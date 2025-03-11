@@ -1,0 +1,507 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 5
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        360,
+        100
+      ],
+      "id": "1dbb2f98-f372-4012-8f99-741422ec5581",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "collection": "remind",
+        "options": {},
+        "query": "{\"enable\":true}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        580,
+        100
+      ],
+      "id": "8537b341-ced2-4ee8-943a-4b7c8decd9a1",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cronParser = require('cron-parser')\nconst processedItems = []\n\nfor (const inp of $input.all()) {\n  let item = inp.json;\n  const cronExpressions = item.notification_schedules\n  const lastScrape = item.last_scrape // Last moment the site has been checked/scraped (Unix timestamp)\n  let shouldRun = false\n  if (cronExpressions?.length) {\n\n    // Check if last scrape falls within the current window\n      const interval = cronParser.parseExpression(cronExpressions.trim())\n      const prevRunTime = Math.floor(interval.prev().getTime() / 1000)\n      if (lastScrape < prevRunTime)\n      {\n        shouldRun = true\n      }\n  }\n    processedItems.push({\n    ...item,\n    shouldRun\n  })\n}\n\nreturn processedItems"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        100
+      ],
+      "id": "18fc0bf1-c667-4ebd-8aa3-a9f063f59b81",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ba48c558-c419-470d-afac-c2921a2361c4",
+              "name": "notification_schedules",
+              "value": "={{ $json.when }}",
+              "type": "string"
+            },
+            {
+              "id": "ac0ac7cf-95a8-4ad8-9528-c942c8ba7447",
+              "name": "last_scrape",
+              "value": "={{ $json.last_triggered_at }}",
+              "type": "string"
+            },
+            {
+              "id": "eeb4209c-a20d-44a7-8b57-6d9c93be52a4",
+              "name": "channel_id",
+              "value": "={{ $json.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8612a751-01d1-407c-beeb-231521a00644",
+              "name": "from_remind",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "a7bd5104-d4ce-481d-8ce4-8e3e10640ecd",
+              "name": "creator_id",
+              "value": "={{ $json.creator_id }}",
+              "type": "string"
+            },
+            {
+              "id": "901393d2-aa8b-48ee-a523-e706eb0fe89b",
+              "name": "notify_channel_id",
+              "value": "={{ $json.notify_channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "b8f9ebe4-8759-422b-a246-7a132bab1148",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        780,
+        100
+      ],
+      "id": "86ee7ffd-9b00-4f50-9fcb-e3e76d2b0749",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "196be192-abd0-49fc-8f88-6bd9c296d50a",
+              "leftValue": "={{ $json.shouldRun }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        100
+      ],
+      "id": "623886dd-f93f-4cbd-8f30-b60136051b94",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d5c4504-db56-4c3b-8ccb-00045ff453f8",
+              "name": "markdownTable",
+              "value": "={{ $json.markdownTable }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2100,
+        140
+      ],
+      "id": "0c155c85-46b5-4efb-a9a0-736025d7a8f5",
+      "name": "Set Values1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        140
+      ],
+      "id": "0515b180-5dc8-43e1-ad61-b0e179ffc788",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.channel_id }}\"},{\"done\":\":x:\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1780,
+        140
+      ],
+      "id": "6259a3fb-1a8a-404a-802e-038b92812730",
+      "name": "Find Undone Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": true
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1500,
+        80
+      ],
+      "id": "06a4a923-c9b4-450f-bd84-d8a0ba2417bf",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "id": "cae59239-c691-429c-ad31-df9259f914b5",
+      "name": "Done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -20
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel_id",
+              "value": "={{ $('Loop Over Items').first().json.notify_channel_id }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.markdownTable }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2320,
+        140
+      ],
+      "id": "f2e8fffe-92f7-4de0-b402-a59206a743a6",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "remind",
+        "fields": "=last_triggered_at",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        2780,
+        140
+      ],
+      "id": "71bbd577-221e-41d6-8deb-f90007f0d9ed",
+      "name": "Update Last Triggered Time",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "881fabb2-21f9-4f92-9f61-75395220b6ab",
+              "name": "last_triggered_at",
+              "value": "={{ $now.toMillis()/1000 }}",
+              "type": "number"
+            },
+            {
+              "id": "9bae2921-dc56-480e-bd5f-5467ace0a706",
+              "name": "id",
+              "value": "={{ $('Loop Over Items').first().json.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2540,
+        140
+      ],
+      "id": "a9646157-b16b-46e2-839e-c2fc549149be",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel_id",
+              "value": "={{ $('Loop Over Items').first().json.notify_channel_id }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.markdownTable }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -120
+      ],
+      "id": "224948ea-2bae-4e0a-a777-e709f57ddc16",
+      "name": "HTTP Request1"
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Values1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to md table": {
+      "main": [
+        [
+          {
+            "node": "Set Values1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Undone Todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Undone Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Last Triggered Time": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Update Last Triggered Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
+  }
+}
