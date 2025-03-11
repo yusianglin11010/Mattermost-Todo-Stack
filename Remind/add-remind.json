@@ -59,14 +59,14 @@
       "parameters": {
         "operation": "insert",
         "collection": "remind",
-        "fields": "id,enable,when,channel_id,last_triggered_at,creator_id",
+        "fields": "id,enable,when,channel_id,last_triggered_at,creator_id,notify_channel_id",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        620,
-        80
+        1400,
+        120
       ],
       "id": "66905f1f-b632-4087-9c50-8091b8d60d4b",
       "name": "MongoDB",
@@ -206,8 +206,8 @@
           "assignments": [
             {
               "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
-              "name": "channel_id",
-              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "name": "notify_channel_id",
+              "value": "={{ $json.channel_id }}",
               "type": "string"
             },
             {
@@ -225,7 +225,7 @@
             {
               "id": "d61c4ddc-f021-4d86-9461-da750aec60cc",
               "name": "id",
-              "value": "={{ $json.id }}",
+              "value": "={{ $('Is Personal Channel').item.json.id }}",
               "type": "number"
             },
             {
@@ -239,6 +239,12 @@
               "name": "creator_id",
               "value": "={{ $('Webhook').item.json.body.user_id }}",
               "type": "string"
+            },
+            {
+              "id": "62b81af6-cd68-4da0-97ab-04ee62cb40f2",
+              "name": "channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
             }
           ]
         },
@@ -247,8 +253,8 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        420,
-        80
+        1140,
+        120
       ],
       "id": "d7440ee8-51d4-46e9-b98b-a8fae1fa0874",
       "name": "Set Insert Values",
@@ -267,6 +273,113 @@
         -680,
         120
       ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/channels/direct",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').item.json.body.user_id }}\"\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        640,
+        20
+      ],
+      "id": "9af35385-d0e0-4db6-a3bd-0cb69a0e9f97",
+      "name": "Create Direct Channel"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "5ccf1aa9-c2b5-4142-a337-d240e1b7c0d7",
+              "leftValue": "={{ $('Webhook').item.json.body.channel_name }}",
+              "rightValue": "__",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        420,
+        120
+      ],
+      "id": "f4153717-e1c8-4461-8850-c3b8d9d48571",
+      "name": "Is Personal Channel"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "cae373dc-686e-493d-8f19-3b5a5159c864",
+              "name": "channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        760,
+        240
+      ],
+      "id": "471b23f8-90fe-4d84-936e-b7b730580d11",
+      "name": "Set Channel"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a364017d-9fc9-47a1-88b3-d8f74d10558a",
+              "name": "channel_id",
+              "value": "={{ $('Create Direct Channel').first().json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        860,
+        20
+      ],
+      "id": "43e000a5-fa91-4e84-9ef0-c1dfa0950816",
+      "name": "Set Channel Id To Bot Channel"
     }
   ],
   "connections": {
@@ -307,7 +420,7 @@
       "main": [
         [
           {
-            "node": "Set Insert Values",
+            "node": "Is Personal Channel",
             "type": "main",
             "index": 0
           }
@@ -318,7 +431,7 @@
       "main": [
         [
           {
-            "node": "Set Insert Values",
+            "node": "Is Personal Channel",
             "type": "main",
             "index": 0
           }
@@ -370,6 +483,57 @@
         [
           {
             "node": "Find All Existed Reminds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Direct Channel": {
+      "main": [
+        [
+          {
+            "node": "Set Channel Id To Bot Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Personal Channel": {
+      "main": [
+        [
+          {
+            "node": "Create Direct Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Channel": {
+      "main": [
+        [
+          {
+            "node": "Set Insert Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Channel Id To Bot Channel": {
+      "main": [
+        [
+          {
+            "node": "Set Insert Values",
             "type": "main",
             "index": 0
           }
