@@ -93,6 +93,12 @@
               "name": "notify_channel_id",
               "value": "={{ $json.notify_channel_id }}",
               "type": "string"
+            },
+            {
+              "id": "b8f9ebe4-8759-422b-a246-7a132bab1148",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
             }
           ]
         },
@@ -223,7 +229,8 @@
       "position": [
         1760,
         -20
-      ]
+      ],
+      "disabled": true
     },
     {
       "parameters": {
@@ -243,11 +250,11 @@
           "parameters": [
             {
               "name": "channel_id",
-              "value": "ortctndsqifp5mgq4dqkmn7bxr"
+              "value": "={{ $('Loop Over Items').first().json.notify_channel_id }}"
             },
             {
               "name": "message",
-              "value": "=## Your Todo is Listed Below :ballot_box_with_check: \n\n{{ $json.markdownTable }}"
+              "value": "={{ $json.markdownTable }}"
             }
           ]
         },
@@ -256,11 +263,99 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        2260,
+        2320,
         140
       ],
       "id": "f2e8fffe-92f7-4de0-b402-a59206a743a6",
       "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "remind",
+        "fields": "=last_triggered_at",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        2780,
+        140
+      ],
+      "id": "71bbd577-221e-41d6-8deb-f90007f0d9ed",
+      "name": "Update Last Triggered Time",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "881fabb2-21f9-4f92-9f61-75395220b6ab",
+              "name": "last_triggered_at",
+              "value": "={{ $now.toMillis()/1000 }}",
+              "type": "number"
+            },
+            {
+              "id": "9bae2921-dc56-480e-bd5f-5467ace0a706",
+              "name": "id",
+              "value": "={{ $('Loop Over Items').first().json.id }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2540,
+        140
+      ],
+      "id": "a9646157-b16b-46e2-839e-c2fc549149be",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel_id",
+              "value": "={{ $('Loop Over Items').first().json.notify_channel_id }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.markdownTable }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2200,
+        -120
+      ],
+      "id": "224948ea-2bae-4e0a-a777-e709f57ddc16",
+      "name": "HTTP Request1"
     }
   ],
   "connections": {
@@ -374,7 +469,29 @@
       "main": [
         [
           {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Last Triggered Time": {
+      "main": [
+        [
+          {
             "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Update Last Triggered Time",
             "type": "main",
             "index": 0
           }
