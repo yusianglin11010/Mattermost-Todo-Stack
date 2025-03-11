@@ -46,8 +46,8 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        -380,
-        40
+        -600,
+        -100
       ],
       "id": "0acb814b-c20f-4cb7-a00f-82cb4592aee8",
       "name": "Sticky Note1"
@@ -56,7 +56,7 @@
       "parameters": {
         "collection": "todo",
         "options": {},
-        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Set Variable').item.json.channel_id }}\"},{\"done\":\":x:\"}]}"
+        "query": "={\"$and\":[{\"channel_id\": \"{{$('Webhook').item.json.body.channel_id}}\"},{\"done\":\":x:\"}]}"
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
@@ -158,8 +158,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        -260,
-        140
+        -480,
+        0
       ],
       "id": "2edf6832-ecf4-4f5b-93cf-50023bbc806a",
       "name": "Response to Channel"
@@ -171,7 +171,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -2140,
+        -2300,
         -40
       ],
       "id": "fc4b334f-986b-424f-87b1-6fedacc73df8",
@@ -218,14 +218,8 @@
             {
               "id": "96a4bc1a-f3ea-4f0d-9840-59cf6c49cb53",
               "name": "channel_id",
-              "value": "={{ $json.channel_id }}",
+              "value": "={{ $json.body.channel_id }}",
               "type": "string"
-            },
-            {
-              "id": "ada922db-8947-4d2c-b912-cbcd77c909b6",
-              "name": "from_remind",
-              "value": "={{ $json.from_remind }}",
-              "type": "boolean"
             }
           ]
         },
@@ -234,82 +228,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        -1980,
+        -2020,
         -40
       ],
-      "id": "825f82b9-225c-4abb-9b4b-313fc21f17c3",
-      "name": "Set Variable"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://chat.gss.tw/api/v4/posts",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "channel_id",
-              "value": "={{ $('Set Variable').first().json.channel_id }}"
-            },
-            {
-              "name": "message",
-              "value": "={{ $('Convert to md table').first().json.markdownTable }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        -280,
-        -120
-      ],
-      "id": "11331f0d-1a60-4387-a6c6-e6c146d9bdf0",
-      "name": "Post msg"
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "options": {
-            "caseSensitive": true,
-            "leftValue": "",
-            "typeValidation": "strict",
-            "version": 2
-          },
-          "conditions": [
-            {
-              "id": "bfb8506d-965f-492d-bb95-1f03d388722f",
-              "leftValue": "={{ $('Set Variable').first().json.from_remind }}",
-              "rightValue": "--silent",
-              "operator": {
-                "type": "boolean",
-                "operation": "true",
-                "singleValue": true
-              }
-            }
-          ],
-          "combinator": "and"
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2.2,
-      "position": [
-        -560,
-        0
-      ],
-      "id": "48c325e8-fcf1-4a0e-8492-c0850ddb743b",
-      "name": "If From Remind"
+      "id": "aba8097d-e061-448a-bc80-0aec68791a25",
+      "name": "Set Variable1"
     }
   ],
   "connections": {
@@ -317,7 +240,7 @@
       "main": [
         [
           {
-            "node": "If From Remind",
+            "node": "Response to Channel",
             "type": "main",
             "index": 0
           }
@@ -379,7 +302,7 @@
       "main": [
         [
           {
-            "node": "Set Variable",
+            "node": "Set Variable1",
             "type": "main",
             "index": 0
           }
@@ -404,7 +327,7 @@
         ]
       ]
     },
-    "Set Variable": {
+    "Set Variable1": {
       "main": [
         [
           {
@@ -414,27 +337,49 @@
           }
         ]
       ]
-    },
-    "If From Remind": {
-      "main": [
-        [
-          {
-            "node": "Post msg",
-            "type": "main",
-            "index": 0
-          }
-        ],
-        [
-          {
-            "node": "Response to Channel",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
     }
   },
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "x-forwarded-proto": "http",
+          "x-forwarded-port": "8080",
+          "x-forwarded-for": "20.89.163.71:42048",
+          "x-original-url": "/todos?action=list",
+          "connection": "keep-alive",
+          "x-appgw-trace-id": "6e1bc16728e48eb82aa5c724ff74cc03",
+          "host": "130.33.207.158:8080",
+          "x-original-host": "130.33.207.158:8080",
+          "content-length": "588",
+          "user-agent": "Mattermost-Bot/1.1",
+          "accept": "application/json",
+          "authorization": "Token s5cp3xebgbyiun1rncn4bmgw9o",
+          "content-type": "application/x-www-form-urlencoded",
+          "accept-encoding": "gzip"
+        },
+        "params": {},
+        "query": {
+          "action": "list"
+        },
+        "body": {
+          "channel_id": "914h5rypyp8f58hknyhuqkq1se",
+          "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
+          "command": "/todo-list",
+          "response_url": "https://chat.gss.tw/hooks/commands/aaag6mxjxjr47csy6946565ybe",
+          "team_domain": "gss",
+          "team_id": "ryrniq9s6pggfxyoniqjpisxge",
+          "text": "",
+          "token": "s5cp3xebgbyiun1rncn4bmgw9o",
+          "trigger_id": "cHBjbzhidHV4aXlzNWZ0MWttZmFoM3gxNGg6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTcwMTU5MDExNTpNRVFDSUFUTVFWSE9HRVBqY1A2cHNoMjV4YW1aRGY2ODFYSHdWdUNCTXhoSXdaVnNBaUJSUzFnUjNnR0RHbHEra3pSMHJvZi9qdFdCSW1XZFNoSTZMN3V4YlAyNm13PT0=",
+          "user_id": "okao1ypwzjbiimd5oxccq7hdch",
+          "user_name": "devin"
+        },
+        "webhookUrl": "http://192.168.102.4/webhook-test/mattermost/todos",
+        "executionMode": "test"
+      }
+    ]
+  },
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
