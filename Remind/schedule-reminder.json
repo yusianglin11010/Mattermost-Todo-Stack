@@ -14,24 +14,25 @@
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
       "position": [
-        0,
-        0
+        360,
+        100
       ],
-      "id": "def06343-7d80-48ad-8ae9-2af3d81e3d3c",
+      "id": "1dbb2f98-f372-4012-8f99-741422ec5581",
       "name": "Schedule Trigger"
     },
     {
       "parameters": {
         "collection": "remind",
-        "options": {}
+        "options": {},
+        "query": "{\"enable\":true}"
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        220,
-        0
+        580,
+        100
       ],
-      "id": "08a31725-3411-456e-814a-a6262d296eac",
+      "id": "8537b341-ced2-4ee8-943a-4b7c8decd9a1",
       "name": "MongoDB",
       "credentials": {
         "mongoDb": {
@@ -47,10 +48,10 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        620,
-        0
+        980,
+        100
       ],
-      "id": "1d4bb6b8-321c-4b89-ab6a-3e390781d026",
+      "id": "18fc0bf1-c667-4ebd-8aa3-a9f063f59b81",
       "name": "Code"
     },
     {
@@ -86,6 +87,12 @@
               "name": "creator_id",
               "value": "={{ $json.creator_id }}",
               "type": "string"
+            },
+            {
+              "id": "901393d2-aa8b-48ee-a523-e706eb0fe89b",
+              "name": "notify_channel_id",
+              "value": "={{ $json.notify_channel_id }}",
+              "type": "string"
             }
           ]
         },
@@ -94,10 +101,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        420,
-        0
+        780,
+        100
       ],
-      "id": "85e5c24f-d64b-41f8-b433-78f473a15137",
+      "id": "86ee7ffd-9b00-4f50-9fcb-e3e76d2b0749",
       "name": "Edit Fields"
     },
     {
@@ -128,38 +135,132 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        840,
-        0
+        1200,
+        100
       ],
-      "id": "1f9340a2-1980-4a47-864f-1c58d26fc0f4",
+      "id": "623886dd-f93f-4cbd-8f30-b60136051b94",
       "name": "If"
     },
     {
       "parameters": {
-        "workflowId": {
-          "__rl": true,
-          "value": "vlxBe5CQMtRORNrL",
-          "mode": "list",
-          "cachedResultName": "List Todo"
-        },
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {},
-          "matchingColumns": [],
-          "schema": [],
-          "attemptToConvertTypes": false,
-          "convertFieldsToString": true
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9d5c4504-db56-4c3b-8ccb-00045ff453f8",
+              "name": "markdownTable",
+              "value": "={{ $json.markdownTable }}",
+              "type": "string"
+            }
+          ]
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.2,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        1060,
-        -100
+        2100,
+        140
       ],
-      "id": "8d4b641c-1ce9-40c2-8450-2a860ac71bc7",
-      "name": "Execute Workflow"
+      "id": "0c155c85-46b5-4efb-a9a0-736025d7a8f5",
+      "name": "Set Values1"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1940,
+        140
+      ],
+      "id": "0515b180-5dc8-43e1-ad61-b0e179ffc788",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.channel_id }}\"},{\"done\":\":x:\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1780,
+        140
+      ],
+      "id": "6259a3fb-1a8a-404a-802e-038b92812730",
+      "name": "Find Undone Todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": true
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1500,
+        80
+      ],
+      "id": "06a4a923-c9b4-450f-bd84-d8a0ba2417bf",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "id": "cae59239-c691-429c-ad31-df9259f914b5",
+      "name": "Done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/posts",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "channel_id",
+              "value": "ortctndsqifp5mgq4dqkmn7bxr"
+            },
+            {
+              "name": "message",
+              "value": "=## Your Todo is Listed Below :ballot_box_with_check: \n\n{{ $json.markdownTable }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2260,
+        140
+      ],
+      "id": "f2e8fffe-92f7-4de0-b402-a59206a743a6",
+      "name": "HTTP Request"
     }
   ],
   "connections": {
@@ -211,7 +312,69 @@
       "main": [
         [
           {
-            "node": "Execute Workflow",
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Values1": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to md table": {
+      "main": [
+        [
+          {
+            "node": "Set Values1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Undone Todo": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Done",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Find Undone Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
             "type": "main",
             "index": 0
           }
