@@ -1,221 +1,227 @@
 {
-    "nodes": [
-      {
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "field": "seconds",
-                "secondsInterval": 5
-              }
-            ]
-          }
-        },
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.2,
-        "position": [
-          0,
-          0
-        ],
-        "id": "def06343-7d80-48ad-8ae9-2af3d81e3d3c",
-        "name": "Schedule Trigger"
-      },
-      {
-        "parameters": {
-          "collection": "remind",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.mongoDb",
-        "typeVersion": 1.1,
-        "position": [
-          220,
-          0
-        ],
-        "id": "08a31725-3411-456e-814a-a6262d296eac",
-        "name": "MongoDB",
-        "credentials": {
-          "mongoDb": {
-            "id": "n2QrVu9KS1tKt3TQ",
-            "name": "BizForm Dev"
-          }
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "seconds",
+              "secondsInterval": 5
+            }
+          ]
         }
       },
-      {
-        "parameters": {
-          "jsCode": "const cronParser = require('cron-parser')\nconst processedItems = []\n\nfor (const inp of $input.all()) {\n  let item = inp.json;\n  const cronExpressions = item.notification_schedules\n  const lastScrape = item.last_scrape // Last moment the site has been checked/scraped (Unix timestamp)\n  let shouldRun = false\n  if (cronExpressions?.length) {\n\n    // Check if last scrape falls within the current window\n      const interval = cronParser.parseExpression(cronExpressions.trim())\n      const prevRunTime = Math.floor(interval.prev().getTime() / 1000)\n      if (lastScrape < prevRunTime)\n      {\n        shouldRun = true\n      }\n  }\n    processedItems.push({\n    ...item,\n    shouldRun\n  })\n}\n\nreturn processedItems"
-        },
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          620,
-          0
-        ],
-        "id": "1d4bb6b8-321c-4b89-ab6a-3e390781d026",
-        "name": "Code"
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "def06343-7d80-48ad-8ae9-2af3d81e3d3c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "collection": "remind",
+        "options": {}
       },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "ba48c558-c419-470d-afac-c2921a2361c4",
-                "name": "notification_schedules",
-                "value": "={{ $json.when }}",
-                "type": "string"
-              },
-              {
-                "id": "ac0ac7cf-95a8-4ad8-9528-c942c8ba7447",
-                "name": "last_scrape",
-                "value": "={{ $json.last_triggered_at }}",
-                "type": "string"
-              },
-              {
-                "id": "eeb4209c-a20d-44a7-8b57-6d9c93be52a4",
-                "name": "channel_id",
-                "value": "={{ $json.channel_id }}",
-                "type": "string"
-              },
-              {
-                "id": "8612a751-01d1-407c-beeb-231521a00644",
-                "name": "from_remind",
-                "value": true,
-                "type": "boolean"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [
-          420,
-          0
-        ],
-        "id": "85e5c24f-d64b-41f8-b433-78f473a15137",
-        "name": "Edit Fields"
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "196be192-abd0-49fc-8f88-6bd9c296d50a",
-                "leftValue": "={{ $json.shouldRun }}",
-                "rightValue": "true",
-                "operator": {
-                  "type": "boolean",
-                  "operation": "true",
-                  "singleValue": true
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          840,
-          0
-        ],
-        "id": "1f9340a2-1980-4a47-864f-1c58d26fc0f4",
-        "name": "If"
-      },
-      {
-        "parameters": {
-          "workflowId": {
-            "__rl": true,
-            "value": "vlxBe5CQMtRORNrL",
-            "mode": "list",
-            "cachedResultName": "List Todo"
-          },
-          "workflowInputs": {
-            "mappingMode": "defineBelow",
-            "value": {},
-            "matchingColumns": [],
-            "schema": [],
-            "attemptToConvertTypes": false,
-            "convertFieldsToString": true
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.executeWorkflow",
-        "typeVersion": 1.2,
-        "position": [
-          1060,
-          -100
-        ],
-        "id": "8d4b641c-1ce9-40c2-8450-2a860ac71bc7",
-        "name": "Execute Workflow"
-      }
-    ],
-    "connections": {
-      "Schedule Trigger": {
-        "main": [
-          [
-            {
-              "node": "MongoDB",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "MongoDB": {
-        "main": [
-          [
-            {
-              "node": "Edit Fields",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Code": {
-        "main": [
-          [
-            {
-              "node": "If",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Edit Fields": {
-        "main": [
-          [
-            {
-              "node": "Code",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "If": {
-        "main": [
-          [
-            {
-              "node": "Execute Workflow",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        220,
+        0
+      ],
+      "id": "08a31725-3411-456e-814a-a6262d296eac",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
       }
     },
-    "pinData": {},
-    "meta": {
-      "templateCredsSetupCompleted": true,
-      "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
+    {
+      "parameters": {
+        "jsCode": "const cronParser = require('cron-parser')\nconst processedItems = []\n\nfor (const inp of $input.all()) {\n  let item = inp.json;\n  const cronExpressions = item.notification_schedules\n  const lastScrape = item.last_scrape // Last moment the site has been checked/scraped (Unix timestamp)\n  let shouldRun = false\n  if (cronExpressions?.length) {\n\n    // Check if last scrape falls within the current window\n      const interval = cronParser.parseExpression(cronExpressions.trim())\n      const prevRunTime = Math.floor(interval.prev().getTime() / 1000)\n      if (lastScrape < prevRunTime)\n      {\n        shouldRun = true\n      }\n  }\n    processedItems.push({\n    ...item,\n    shouldRun\n  })\n}\n\nreturn processedItems"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        0
+      ],
+      "id": "1d4bb6b8-321c-4b89-ab6a-3e390781d026",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ba48c558-c419-470d-afac-c2921a2361c4",
+              "name": "notification_schedules",
+              "value": "={{ $json.when }}",
+              "type": "string"
+            },
+            {
+              "id": "ac0ac7cf-95a8-4ad8-9528-c942c8ba7447",
+              "name": "last_scrape",
+              "value": "={{ $json.last_triggered_at }}",
+              "type": "string"
+            },
+            {
+              "id": "eeb4209c-a20d-44a7-8b57-6d9c93be52a4",
+              "name": "channel_id",
+              "value": "={{ $json.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "8612a751-01d1-407c-beeb-231521a00644",
+              "name": "from_remind",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "a7bd5104-d4ce-481d-8ce4-8e3e10640ecd",
+              "name": "creator_id",
+              "value": "={{ $json.creator_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        420,
+        0
+      ],
+      "id": "85e5c24f-d64b-41f8-b433-78f473a15137",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "196be192-abd0-49fc-8f88-6bd9c296d50a",
+              "leftValue": "={{ $json.shouldRun }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        840,
+        0
+      ],
+      "id": "1f9340a2-1980-4a47-864f-1c58d26fc0f4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "vlxBe5CQMtRORNrL",
+          "mode": "list",
+          "cachedResultName": "List Todo"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        1060,
+        -100
+      ],
+      "id": "8d4b641c-1ce9-40c2-8450-2a860ac71bc7",
+      "name": "Execute Workflow"
     }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Execute Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
   }
+}
