@@ -1,417 +1,420 @@
 {
-    "nodes": [
-      {
-        "parameters": {
-          "operation": "insert",
-          "collection": "todo",
-          "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority",
-          "options": {}
-        },
-        "type": "n8n-nodes-base.mongoDb",
-        "typeVersion": 1.1,
-        "position": [
-          1760,
-          -60
-        ],
-        "id": "20cef427-13c5-4b4e-8124-fcd7b2e2da88",
-        "name": "Add todo",
-        "credentials": {
-          "mongoDb": {
-            "id": "mpJVL6vUNDV3B35S",
-            "name": "mattermost"
-          }
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "insert",
+        "collection": "todo",
+        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        840,
+        120
+      ],
+      "id": "97ba8f3c-83cf-42cd-9a80-b6f0fd394ff3",
+      "name": "Add todo",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
         }
-      },
-      {
-        "parameters": {
-          "content": "## 實作 increment id\n\n** id 最大值往上 + 1",
-          "height": 340,
-          "width": 420
-        },
-        "type": "n8n-nodes-base.stickyNote",
-        "typeVersion": 1,
-        "position": [
-          880,
-          -160
-        ],
-        "id": "1e907586-6967-4169-be83-7ebb51ad2d12",
-        "name": "Sticky Note"
-      },
-      {
-        "parameters": {
-          "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w\\s!@#$%^&*()\\p{L}.]+)|-([\\w])=([\\w\\s!@#$%^&*()\\p{L}.]+)/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
-        },
-        "id": "02078757-a6e8-4df8-9342-f9d2b1476482",
-        "name": "Todo Creation Arg Converter",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          200,
-          0
-        ]
-      },
-      {
-        "parameters": {
-          "fieldsToSummarize": {
-            "values": [
-              {
-                "aggregation": "max",
-                "field": "id"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.summarize",
-        "typeVersion": 1.1,
-        "position": [
-          900,
-          100
-        ],
-        "id": "5570760b-d866-4dcf-bece-3c918657fe07",
-        "name": "Get Max Id"
-      },
-      {
-        "parameters": {
-          "collection": "todo",
-          "options": {},
-          "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
-        },
-        "type": "n8n-nodes-base.mongoDb",
-        "typeVersion": 1.1,
-        "position": [
-          400,
-          0
-        ],
-        "id": "98287556-817a-408c-96ea-1c1feb47a638",
-        "name": "Find All Existed Todo",
-        "alwaysOutputData": true,
-        "credentials": {
-          "mongoDb": {
-            "id": "mpJVL6vUNDV3B35S",
-            "name": "mattermost"
-          }
-        }
-      },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
-                "name": "id",
-                "value": "={{ $json.max_id +1 }} ",
-                "type": "number"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [
-          1100,
-          100
-        ],
-        "id": "ebc1b7aa-c1ff-43b3-8b5c-c8b6d62a7c99",
-        "name": "Set Max ID + 1"
-      },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
-                "name": "channel_id",
-                "value": "={{ $('Webhook').item.json.body.channel_id }}",
-                "type": "string"
-              },
-              {
-                "id": "00e7ba5e-5c2c-40a8-bbde-10562f7b7949",
-                "name": "text",
-                "value": "={{ $('Todo Creation Arg Converter').item.json.text }}",
-                "type": "string"
-              },
-              {
-                "id": "1e7580ec-82af-4669-8882-03ce3c2c224e",
-                "name": "user_name",
-                "value": "={{ $('Webhook').item.json.body.user_name }}",
-                "type": "string"
-              },
-              {
-                "id": "df68d03b-1adb-4395-97e6-9192cd025377",
-                "name": "user_id",
-                "value": "={{ $('Webhook').item.json.body.user_id }}",
-                "type": "string"
-              },
-              {
-                "id": "d61c4ddc-f021-4d86-9461-da750aec60cc",
-                "name": "id",
-                "value": "={{ $json.id }}",
-                "type": "number"
-              },
-              {
-                "id": "f1cbbba3-ba6e-4a85-8050-a78bbf98c9bf",
-                "name": "done",
-                "value": ":x:",
-                "type": "string"
-              },
-              {
-                "id": "c00560b1-83ba-4de6-a7ae-5f06270689f8",
-                "name": "=assignee",
-                "value": "={{ $('Todo Creation Arg Converter').item.json.assignee }}",
-                "type": "string"
-              },
-              {
-                "id": "a2048aa9-a5b0-4ac1-be6e-5cfcce86457b",
-                "name": "priority",
-                "value": "={{ $('Todo Creation Arg Converter').item.json.priority }}",
-                "type": "number"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [
-          1380,
-          -60
-        ],
-        "id": "21c0315d-4693-454e-a2cd-4e33c7e02e78",
-        "name": "Set Insert Values",
-        "alwaysOutputData": true,
-        "onError": "continueRegularOutput"
-      },
-      {
-        "parameters": {
-          "assignments": {
-            "assignments": [
-              {
-                "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
-                "name": "id",
-                "value": "1",
-                "type": "string"
-              }
-            ]
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.set",
-        "typeVersion": 3.4,
-        "position": [
-          900,
-          -60
-        ],
-        "id": "e2253546-630c-46f7-9f0a-6a4a21105971",
-        "name": "Set Id 1"
-      },
-      {
-        "parameters": {
-          "conditions": {
-            "options": {
-              "caseSensitive": true,
-              "leftValue": "",
-              "typeValidation": "strict",
-              "version": 2
-            },
-            "conditions": [
-              {
-                "id": "e894ab39-3f0e-4751-aac7-d796b3e8180f",
-                "leftValue": "={{ $json.item.json }}",
-                "rightValue": 0,
-                "operator": {
-                  "type": "object",
-                  "operation": "empty",
-                  "singleValue": true
-                }
-              }
-            ],
-            "combinator": "and"
-          },
-          "options": {}
-        },
-        "type": "n8n-nodes-base.if",
-        "typeVersion": 2.2,
-        "position": [
-          640,
-          0
-        ],
-        "id": "6e40e102-430b-431e-8048-85753c60f60d",
-        "name": "If Exists Todo"
-      },
-      {
-        "parameters": {},
-        "type": "n8n-nodes-base.limit",
-        "typeVersion": 1,
-        "position": [
-          1100,
-          -60
-        ],
-        "id": "d1638f6d-c720-4d61-bcc6-56d53c60c01c",
-        "name": "Limit"
-      },
-      {
-        "parameters": {
-          "inputSource": "passthrough"
-        },
-        "type": "n8n-nodes-base.executeWorkflowTrigger",
-        "typeVersion": 1.1,
-        "position": [
-          0,
-          0
-        ],
-        "id": "95b0e98b-fa9a-40fd-b455-d0fee85968e3",
-        "name": "Webhook"
-      }
-    ],
-    "connections": {
-      "Todo Creation Arg Converter": {
-        "main": [
-          [
-            {
-              "node": "Find All Existed Todo",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Get Max Id": {
-        "main": [
-          [
-            {
-              "node": "Set Max ID + 1",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Find All Existed Todo": {
-        "main": [
-          [
-            {
-              "node": "If Exists Todo",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Set Max ID + 1": {
-        "main": [
-          [
-            {
-              "node": "Set Insert Values",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Set Insert Values": {
-        "main": [
-          [
-            {
-              "node": "Add todo",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Set Id 1": {
-        "main": [
-          [
-            {
-              "node": "Limit",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "If Exists Todo": {
-        "main": [
-          [
-            {
-              "node": "Set Id 1",
-              "type": "main",
-              "index": 0
-            }
-          ],
-          [
-            {
-              "node": "Get Max Id",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Limit": {
-        "main": [
-          [
-            {
-              "node": "Set Insert Values",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Webhook": {
-        "main": [
-          [
-            {
-              "node": "Todo Creation Arg Converter",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
       }
     },
-    "pinData": {
-      "Webhook": [
-        {
-          "headers": {
-            "connection": "close",
-            "host": "n8n.weiting.me",
-            "x-real-ip": "20.89.163.71",
-            "x-forwarded-for": "20.89.163.71",
-            "x-forwarded-proto": "https",
-            "content-length": "596",
-            "user-agent": "Mattermost-Bot/1.1",
-            "accept": "application/json",
-            "authorization": "Token rqzs9eozk3dw9kbngw6bgy8rdo",
-            "content-type": "application/x-www-form-urlencoded",
-            "accept-encoding": "gzip"
-          },
-          "params": {
-            "action": "add"
-          },
-          "query": {},
-          "body": {
-            "channel_id": "914h5rypyp8f58hknyhuqkq1se",
-            "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
-            "command": "/todo-add",
-            "response_url": "https://chat.gss.tw/hooks/commands/pw86qyzectbd387hiys9n67syy",
-            "team_domain": "gss",
-            "team_id": "ryrniq9s6pggfxyoniqjpisxge",
-            "text": "-c=test",
-            "token": "rqzs9eozk3dw9kbngw6bgy8rdo",
-            "trigger_id": "aWUzMWJwaG5mYm5ieG1peDZmNWNpcmMxOHk6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTQ1NzM0MDY5MDpNRVVDSUd0ZWl3YW9FRU8yb1pPc1JldFlpQUQrWFhFYm9BMGZpY0t5dDl1Yi8rRG9BaUVBa2pLUXZCUk1pUlFnYUZCRGV4dWtLb0JuN3I5UEtrOFAwVUJaNDZJRmxjbz0=",
-            "user_id": "okao1ypwzjbiimd5oxccq7hdch",
-            "user_name": "devin"
-          },
-          "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
-          "executionMode": "test"
-        }
+    {
+      "parameters": {
+        "content": "## 實作 increment id\n\n** id 最大值往上 + 1",
+        "height": 340,
+        "width": 420
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "6b918b04-3614-4372-bdaf-2b0b36ebdf43",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w\\s!@#$%^&*()\\p{L}.]+)|-([\\w])=([\\w\\s!@#$%^&*()\\p{L}.]+)/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
+      },
+      "id": "814a13b7-dab7-4e68-a742-292dcd444428",
+      "name": "Todo Creation Arg Converter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -680,
+        160
       ]
     },
-    "meta": {
-      "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
+    {
+      "parameters": {
+        "fieldsToSummarize": {
+          "values": [
+            {
+              "aggregation": "max",
+              "field": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.summarize",
+      "typeVersion": 1.1,
+      "position": [
+        20,
+        60
+      ],
+      "id": "d1ed3392-cae2-4e2e-8b6b-09a318124ff2",
+      "name": "Get Max Id"
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"channel_id\": \"{{ $('Webhook').item.json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        -480,
+        160
+      ],
+      "id": "c0884a54-4269-459b-a850-966f627540e9",
+      "name": "Find All Existed Todo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "={{ $json.max_id +1 }} ",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        60
+      ],
+      "id": "3808ce64-95b7-4d29-8c44-cf8a6f200dc1",
+      "name": "Set Max ID + 1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
+              "name": "channel_id",
+              "value": "={{ $('Webhook').item.json.body.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "00e7ba5e-5c2c-40a8-bbde-10562f7b7949",
+              "name": "text",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "1e7580ec-82af-4669-8882-03ce3c2c224e",
+              "name": "user_name",
+              "value": "={{ $('Webhook').item.json.body.user_name }}",
+              "type": "string"
+            },
+            {
+              "id": "df68d03b-1adb-4395-97e6-9192cd025377",
+              "name": "user_id",
+              "value": "={{ $('Webhook').item.json.body.user_id }}",
+              "type": "string"
+            },
+            {
+              "id": "d61c4ddc-f021-4d86-9461-da750aec60cc",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "f1cbbba3-ba6e-4a85-8050-a78bbf98c9bf",
+              "name": "done",
+              "value": ":x:",
+              "type": "string"
+            },
+            {
+              "id": "c00560b1-83ba-4de6-a7ae-5f06270689f8",
+              "name": "=assignee",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.assignee }}",
+              "type": "string"
+            },
+            {
+              "id": "a2048aa9-a5b0-4ac1-be6e-5cfcce86457b",
+              "name": "priority",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.priority }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        120
+      ],
+      "id": "9c677eae-b8b9-4baa-a928-35bbc4a6f72f",
+      "name": "Set Insert Values",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a2ee995f-23f8-4b66-9ecc-404b767cb48c",
+              "name": "id",
+              "value": "1",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        100,
+        200
+      ],
+      "id": "04ac9019-4362-4cd9-8e72-8eca867068e9",
+      "name": "Set Id 1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e894ab39-3f0e-4751-aac7-d796b3e8180f",
+              "leftValue": "={{ $json.item.json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -240,
+        160
+      ],
+      "id": "e8626cb4-7fed-4a35-b837-6c2352a378da",
+      "name": "If Exists Todo"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        460,
+        120
+      ],
+      "id": "18d935e5-39a9-490b-ab7f-501d33890791",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -880,
+        160
+      ],
+      "id": "acd342ca-72df-4b70-9fdf-e97258766bd5",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.response_url }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "✅ Todo added successfully!"
+            },
+            {
+              "name": "response_type",
+              "value": "in_channel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        120
+      ],
+      "id": "036d4ff9-e39a-4a42-a467-0bc0e65415c4",
+      "name": "HTTP Request"
     }
+  ],
+  "connections": {
+    "Add todo": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Todo Creation Arg Converter": {
+      "main": [
+        [
+          {
+            "node": "Find All Existed Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Max Id": {
+      "main": [
+        [
+          {
+            "node": "Set Max ID + 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find All Existed Todo": {
+      "main": [
+        [
+          {
+            "node": "If Exists Todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Max ID + 1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Insert Values": {
+      "main": [
+        [
+          {
+            "node": "Add todo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Id 1": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Exists Todo": {
+      "main": [
+        [
+          {
+            "node": "Get Max Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Id 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Set Insert Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Todo Creation Arg Converter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
   }
+}
