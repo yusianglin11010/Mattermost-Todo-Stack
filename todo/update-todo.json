@@ -1,0 +1,337 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "collection": "todo",
+          "options": {},
+          "query": "={\"$and\":[{\"channel_id\": \"{{$('Webhook').item.json.body.channel_id}}\"},{\"id\":{{ $json.id }}}]}"
+        },
+        "type": "n8n-nodes-base.mongoDb",
+        "typeVersion": 1.1,
+        "position": [
+          700,
+          0
+        ],
+        "id": "8b021b40-4ffc-4a46-a5d7-178326b5bbe5",
+        "name": "MongoDB",
+        "alwaysOutputData": true,
+        "credentials": {
+          "mongoDb": {
+            "id": "n2QrVu9KS1tKt3TQ",
+            "name": "BizForm Dev"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "7f7163da-20c1-4ccb-8aad-edd1203517ff",
+        "name": "Webhook"
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w\\s!@#$%^&*()\\p{L}.]+)|-([\\w])=([\\w\\s!@#$%^&*()\\p{L}.]+)/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\nlet id = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    } else if (key === 'i' || key === 'id') {\n        id = value;\n    }\n\n}\n\n// Return the results\nreturn { text, assignee, priority, id };"
+        },
+        "id": "6f505b2a-cf20-4d52-825b-a7a5b2641f54",
+        "name": "Todo Creation Arg Converter",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          260,
+          0
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "2d3f0e9f-91b7-422a-b5ba-6356153af4ee",
+                "name": "text",
+                "value": "={{ $json.text }}",
+                "type": "string"
+              },
+              {
+                "id": "f3b55c64-e028-42bf-ac1c-3952750c8094",
+                "name": "assignee",
+                "value": "={{ $json.assignee }}",
+                "type": "string"
+              },
+              {
+                "id": "3de2f242-9fe1-4120-811e-f35ceb2738a4",
+                "name": "id",
+                "value": "={{ $json.id }}",
+                "type": "number"
+              },
+              {
+                "id": "653e1e8b-928e-44b1-b697-bfe692a25e68",
+                "name": "priority",
+                "value": "={{ $json.priority }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          480,
+          0
+        ],
+        "id": "91d0688a-ee63-4bb2-bc3c-0b0417991dbe",
+        "name": "Set Variables"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "3bfc31d0-0aef-40d1-8f21-18e9f2dd6bcd",
+                "leftValue": "={{ $json }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "object",
+                  "operation": "empty",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          920,
+          0
+        ],
+        "id": "bc68475b-4657-494b-9033-d01086a54d52",
+        "name": "If"
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "collection": "todo",
+          "fields": "text,assignee,priority",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.mongoDb",
+        "typeVersion": 1.1,
+        "position": [
+          1380,
+          100
+        ],
+        "id": "097d1ecd-4926-4947-b91a-5d91adacbaed",
+        "name": "MongoDB1",
+        "credentials": {
+          "mongoDb": {
+            "id": "n2QrVu9KS1tKt3TQ",
+            "name": "BizForm Dev"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Webhook').item.json.body.response_url }}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "text",
+                "value": "❌ Todo not found in your to-do list."
+              },
+              {
+                "name": "response_type",
+                "value": "in_channel"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1160,
+          -100
+        ],
+        "id": "c6ec385e-1a1d-48e7-9b3f-db820427737a",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "894240c4-6124-4ff4-8f97-61f8a7de9e25",
+                "name": "id",
+                "value": "={{ $json.id }}",
+                "type": "number"
+              },
+              {
+                "id": "57bf4718-b3ab-402d-b433-c6a85a439879",
+                "name": "text",
+                "value": "={{ $('Set Variables').item.json.text }}",
+                "type": "string"
+              },
+              {
+                "id": "e0522030-818f-468f-aa5c-6ff5a72faf95",
+                "name": "assignee",
+                "value": "={{ $('Set Variables').item.json.assignee }}",
+                "type": "string"
+              },
+              {
+                "id": "12e26c93-815d-4a51-9054-c5260d06106c",
+                "name": "priority",
+                "value": "={{ $('Set Variables').item.json.priority }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1140,
+          100
+        ],
+        "id": "b62b7425-b970-49a6-8921-8a4df13d0319",
+        "name": "Set Insert Data"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Webhook').item.json.body.response_url }}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "text",
+                "value": "✅ Todo updated successfully!"
+              },
+              {
+                "name": "response_type",
+                "value": "in_channel"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1600,
+          100
+        ],
+        "id": "f3f59d16-4d40-4a87-a809-8b272fb5efe4",
+        "name": "HTTP Request1"
+      }
+    ],
+    "connections": {
+      "MongoDB": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Todo Creation Arg Converter",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Todo Creation Arg Converter": {
+        "main": [
+          [
+            {
+              "node": "Set Variables",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Variables": {
+        "main": [
+          [
+            {
+              "node": "MongoDB",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Set Insert Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MongoDB1": {
+        "main": [
+          [
+            {
+              "node": "HTTP Request1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Insert Data": {
+        "main": [
+          [
+            {
+              "node": "MongoDB1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "pinData": {},
+    "meta": {
+      "templateCredsSetupCompleted": true,
+      "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
+    }
+  }
