@@ -4,7 +4,7 @@
       "parameters": {
         "operation": "insert",
         "collection": "todo",
-        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority",
+        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority,created_at",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
@@ -167,6 +167,12 @@
               "name": "priority",
               "value": "={{ $('Todo Creation Arg Converter').item.json.priority }}",
               "type": "number"
+            },
+            {
+              "id": "be46dd0f-ccc7-4b2d-8532-9b39fb2135ea",
+              "name": "created_at",
+              "value": "={{ $now.setZone('UTC+8') }}",
+              "type": "string"
             }
           ]
         },
