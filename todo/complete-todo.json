@@ -2,19 +2,6 @@
   "nodes": [
     {
       "parameters": {
-        "inputSource": "passthrough"
-      },
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.1,
-      "position": [
-        1080,
-        -100
-      ],
-      "id": "54cf16cf-48d2-4354-b89c-42a43e4252a1",
-      "name": "When Executed by Another Workflow"
-    },
-    {
-      "parameters": {
         "collection": "todo",
         "options": {},
         "query": "={\"$and\":[{\"channel_id\": \"{{ $json.body.channel_id }}\"},{\"id\":{{ $json.body.text }}}]}"
@@ -22,15 +9,15 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        1280,
-        -100
+        -620,
+        -20
       ],
-      "id": "d2e5f0dd-3c85-459d-9e75-b6bcdf2a5ba5",
+      "id": "0cf2a290-6037-4166-9167-ea1b5bef7bf9",
       "name": "Find Todo By Id",
       "credentials": {
         "mongoDb": {
-          "id": "mpJVL6vUNDV3B35S",
-          "name": "mattermost"
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
         }
       }
     },
@@ -51,10 +38,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1480,
-        -100
+        -420,
+        -20
       ],
-      "id": "9d0c4e63-8bf2-422e-9f6e-d9a7122c8fad",
+      "id": "3704046a-4832-420d-b5ce-e602475d5175",
       "name": "Set Id Field"
     },
     {
@@ -80,10 +67,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1680,
-        -100
+        -220,
+        -20
       ],
-      "id": "6bc0af24-3515-4f60-9088-14af1b09d638",
+      "id": "09ca6d06-fb13-434c-904d-76d4bf6ffc9e",
       "name": "Set Id & Replace \""
     },
     {
@@ -97,15 +84,15 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        1880,
-        -100
+        -20,
+        -20
       ],
-      "id": "e4324323-7ec9-49f7-a972-1f13b8ec369c",
+      "id": "468b7702-dfbb-4093-82cc-3abfe347fe78",
       "name": "Complete Todo",
       "credentials": {
         "mongoDb": {
-          "id": "mpJVL6vUNDV3B35S",
-          "name": "mattermost"
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
         }
       }
     },
@@ -118,25 +105,55 @@
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
       "position": [
-        1580,
-        -160
+        -320,
+        -80
       ],
-      "id": "41a52ce4-9c46-4dfc-9ba6-98e20cad8008",
+      "id": "7fb6700f-8540-4f82-8ae2-877ee9abb15f",
       "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -820,
+        -20
+      ],
+      "id": "b265cfc0-a2dc-4df3-888d-1b1e75f0862d",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').item.json.body.response_url }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "=Todo `{{ $('Find Todo By Id').item.json.text }}`  complete! 🎉"
+            },
+            {
+              "name": "response_type",
+              "value": "in_channel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        180,
+        -20
+      ],
+      "id": "904b04cd-d10a-4cd6-b969-1964b1799ab6",
+      "name": "HTTP Request"
     }
   ],
   "connections": {
-    "When Executed by Another Workflow": {
-      "main": [
-        [
-          {
-            "node": "Find Todo By Id",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Find Todo By Id": {
       "main": [
         [
@@ -169,48 +186,33 @@
           }
         ]
       ]
+    },
+    "Complete Todo": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Find Todo By Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "headers": {
-          "connection": "close",
-          "host": "n8n.weiting.me",
-          "x-real-ip": "20.89.163.71",
-          "x-forwarded-for": "20.89.163.71",
-          "x-forwarded-proto": "https",
-          "content-length": "589",
-          "user-agent": "Mattermost-Bot/1.1",
-          "accept": "application/json",
-          "authorization": "Token 5kmp7dby4pgc7x4qg7q8tgi8ja",
-          "content-type": "application/x-www-form-urlencoded",
-          "accept-encoding": "gzip"
-        },
-        "params": {
-          "action": "done"
-        },
-        "query": {},
-        "body": {
-          "channel_id": "914h5rypyp8f58hknyhuqkq1se",
-          "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
-          "command": "/todo-done",
-          "response_url": "https://chat.gss.tw/hooks/commands/emnwd8q68tgfpcmb6rmmr9ufcr",
-          "team_domain": "gss",
-          "team_id": "ryrniq9s6pggfxyoniqjpisxge",
-          "text": "2",
-          "token": "5kmp7dby4pgc7x4qg7q8tgi8ja",
-          "trigger_id": "Z21ib2Fvcjd5anJyN2JiZmZuajM3NnVqOWg6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MTQ1MDE0NjEyOTpNRVVDSUhZYURKUXhheXplZzZmOG5Wait3UlRUVVhnaVhnNXpmZGg3Mm01YytjbVVBaUVBOEZLM3M5c3lkMkJybzlUNUhtLzZwb3pLSDdHa1NMTnkwTGFqZFo5RDVqVT0=",
-          "user_id": "okao1ypwzjbiimd5oxccq7hdch",
-          "user_name": "devin"
-        },
-        "webhookUrl": "https://n8n.weiting.me/webhook-test/85de886d-2694-4df0-87b0-965db533f492/mattermost/todos/:action",
-        "executionMode": "test"
-      }
-    ]
-  },
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
-    "instanceId": "eb24dce5d4aef556d676bc7f743db645da668ad0a28698a3baf0616aa1f0314b"
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
   }
 }
