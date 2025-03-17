@@ -292,11 +292,94 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        1060,
-        120
+        1260,
+        200
       ],
       "id": "036d4ff9-e39a-4a42-a467-0bc0e65415c4",
       "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3dea5247-0932-432e-93f8-c0eef19629fa",
+              "leftValue": "={{ $('Webhook').first().json.body.text }}",
+              "rightValue": "--silent",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        120
+      ],
+      "id": "59ee14c0-5f3a-4905-be09-f20725c53f83",
+      "name": "Is Silent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/channels/direct",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": ""
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').first().json.body.user_id }}\"\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1260,
+        60
+      ],
+      "id": "05dbeaf0-bc91-443b-9f7c-4f17253bf625",
+      "name": "Create Direct Channel"
+    },
+    {
+      "parameters": {
+        "channelId": "={{ $json.id }}",
+        "message": "=✅ Todo added successfully!",
+        "attachments": [],
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.mattermost",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        60
+      ],
+      "id": "1cd23913-e44d-4fad-a46b-7ddb5d6dc09b",
+      "name": "Mattermost",
+      "credentials": {
+        "mattermostApi": {
+          "id": "QSV4fNtIj04Jhody",
+          "name": "Mattermost account 2"
+        }
+      }
     }
   ],
   "connections": {
@@ -304,7 +387,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Is Silent",
             "type": "main",
             "index": 0
           }
@@ -411,6 +494,35 @@
         [
           {
             "node": "Todo Creation Arg Converter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Silent": {
+      "main": [
+        [
+          {
+            "node": "Create Direct Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Direct Channel": {
+      "main": [
+        [
+          {
+            "node": "Mattermost",
             "type": "main",
             "index": 0
           }
