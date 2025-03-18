@@ -1,0 +1,45 @@
+#!/bin/sh
+# Git pre-commit hook to filter sensitive information in "Bearer {token}" format
+# Save this file as .git/hooks/pre-commit (without file extension)
+
+echo "Checking for Bearer tokens..."
+
+# Get all files staged for commit
+files=$(git diff --cached --name-only --diff-filter=ACM)
+
+# Exit if there are no files to commit
+if [ -z "$files" ]; then
+    echo "No files to commit."
+    exit 0
+fi
+
+# Check each file
+found_token=0
+for file in $files; do
+    # Ensure file exists and is readable
+    if [ ! -f "$file" ]; then
+        continue
+    fi
+    
+    # Skip obvious binary files
+    if [[ "$file" == *.exe || "$file" == *.dll || "$file" == *.zip || "$file" == *.png || "$file" == *.jpg || "$file" == *.jpeg || "$file" == *.gif || "$file" == *.pdf ]]; then
+        continue
+    fi
+    
+    # Use grep to search for Bearer token patterns
+    if grep -q -E "Bearer\s+[A-Za-z0-9\-\._~\+\/]+" "$file" 2>/dev/null; then
+        echo "Found Bearer token in $file, please remove before committing"
+        grep -n -E "Bearer\s+[A-Za-z0-9\-\._~\+\/]+" "$file"
+        found_token=1
+    fi
+done
+
+# If tokens are found, block the commit
+if [ $found_token -eq 1 ]; then
+    echo "Commit rejected: Please remove the Bearer tokens from the files above and try again."
+    echo "Tip: You can use 'git commit --no-verify' to force the commit, but this is not recommended."
+    exit 1
+fi
+
+echo "No Bearer tokens found, commit proceeding."
+exit 0
