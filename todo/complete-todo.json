@@ -4,7 +4,7 @@
       "parameters": {
         "collection": "todo",
         "options": {},
-        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.body.channel_id }}\"},{\"id\":{{ $json.body.text }}}]}"
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.body.channel_id }}\"},{\"id\":{{ $json.body.text[0] }}}]}"
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
@@ -146,11 +146,94 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        180,
-        -20
+        440,
+        100
       ],
       "id": "904b04cd-d10a-4cd6-b969-1964b1799ab6",
       "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3dea5247-0932-432e-93f8-c0eef19629fa",
+              "leftValue": "={{ $('Webhook').first().json.body.text }}",
+              "rightValue": "--silent",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        160,
+        -20
+      ],
+      "id": "dc0f1a6a-f42d-42ad-b8f5-18579a2feb73",
+      "name": "Is Silent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/channels/direct",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": ""
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').first().json.body.user_id }}\"\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        -100
+      ],
+      "id": "0de0ed1c-7798-4749-b31d-a254c00c8f74",
+      "name": "Create Direct Channel"
+    },
+    {
+      "parameters": {
+        "channelId": "={{ $json.id }}",
+        "message": "=Todo `{{ $('Find Todo By Id').item.json.text }}`  complete! 🎉",
+        "attachments": [],
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.mattermost",
+      "typeVersion": 1,
+      "position": [
+        660,
+        -100
+      ],
+      "id": "27c88b2c-3e76-4eaa-92a9-d3c491c7d6da",
+      "name": "Mattermost",
+      "credentials": {
+        "mattermostApi": {
+          "id": "QSV4fNtIj04Jhody",
+          "name": "Mattermost account 2"
+        }
+      }
     }
   ],
   "connections": {
@@ -191,7 +274,7 @@
       "main": [
         [
           {
-            "node": "HTTP Request",
+            "node": "Is Silent",
             "type": "main",
             "index": 0
           }
@@ -208,9 +291,78 @@
           }
         ]
       ]
+    },
+    "Is Silent": {
+      "main": [
+        [
+          {
+            "node": "Create Direct Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Direct Channel": {
+      "main": [
+        [
+          {
+            "node": "Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "pinData": {},
+  "pinData": {
+    "Webhook": [
+      {
+        "headers": {
+          "x-forwarded-proto": "http",
+          "x-forwarded-port": "8080",
+          "x-forwarded-for": "20.89.163.71:40576",
+          "x-original-url": "/todos?action=done",
+          "connection": "keep-alive",
+          "x-appgw-trace-id": "dda6a6f158c8c18d3a45a0ec25531f15",
+          "host": "130.33.207.158:8080",
+          "x-original-host": "130.33.207.158:8080",
+          "content-length": "598",
+          "user-agent": "Mattermost-Bot/1.1",
+          "accept": "application/json",
+          "authorization": "Token qkw1ho1zaj8w8dr5h4gxz43rpe",
+          "content-type": "application/x-www-form-urlencoded",
+          "accept-encoding": "gzip"
+        },
+        "params": {},
+        "query": {
+          "action": "done"
+        },
+        "body": {
+          "channel_id": "914h5rypyp8f58hknyhuqkq1se",
+          "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
+          "command": "/todo-done",
+          "response_url": "https://chat.gss.tw/hooks/commands/3iotnbfxfpbipejmobgf9j1wjc",
+          "team_domain": "gss",
+          "team_id": "ryrniq9s6pggfxyoniqjpisxge",
+          "text": "4 --silent",
+          "token": "qkw1ho1zaj8w8dr5h4gxz43rpe",
+          "trigger_id": "NWVnYW9hNGhlcGJtdWo5ZHVrZWdoMWJkaXI6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MjIyMzIyMjQ1MjpNRVFDSUI0NnVwa0NzYmZXNUFJVEU1TEsvWk53ckFWTkxJMmlGMHlEWG1sTnZlQlBBaUErc0ovN0JnNWkweWU5T1lQbEZGN2Mvd0o5bmNxWWZGYTZUMW5UUVpadTlRPT0=",
+          "user_id": "okao1ypwzjbiimd5oxccq7hdch",
+          "user_name": "devin"
+        },
+        "webhookUrl": "http://192.168.102.4/webhook-test/mattermost/todos",
+        "executionMode": "test"
+      }
+    ]
+  },
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
