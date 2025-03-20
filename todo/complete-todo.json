@@ -4,12 +4,12 @@
       "parameters": {
         "collection": "todo",
         "options": {},
-        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.body.channel_id }}\"},{\"id\":{{ $json.body.text[0] }}}]}"
+        "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').first().json.body.channel_id }}\"},{\"id\":{{ $json.id }}}]}"
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -620,
+        -660,
         -20
       ],
       "id": "0cf2a290-6037-4166-9167-ea1b5bef7bf9",
@@ -118,7 +118,7 @@
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
       "position": [
-        -820,
+        -1120,
         -20
       ],
       "id": "b265cfc0-a2dc-4df3-888d-1b1e75f0862d",
@@ -234,6 +234,19 @@
           "name": "Mattermost account 2"
         }
       }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input =  $input.first().json.body.text;\nconst regex = /\\d+(\\.\\d+)?/;\nlet id = null;\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[0]);\n}\nreturn {id}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -880,
+        -20
+      ],
+      "id": "1dead247-930a-4c29-b770-1ff1489ae204",
+      "name": "Get Id"
     }
   ],
   "connections": {
@@ -285,7 +298,7 @@
       "main": [
         [
           {
-            "node": "Find Todo By Id",
+            "node": "Get Id",
             "type": "main",
             "index": 0
           }
@@ -315,6 +328,17 @@
         [
           {
             "node": "Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Id": {
+      "main": [
+        [
+          {
+            "node": "Find Todo By Id",
             "type": "main",
             "index": 0
           }
