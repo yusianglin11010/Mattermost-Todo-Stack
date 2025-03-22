@@ -1,0 +1,563 @@
+{
+  "name": "gitlab comment remind bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "mattermost/gitlab",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -60,
+        160
+      ],
+      "id": "6a1360b3-4630-42ce-bcc0-8b9e2ded855d",
+      "name": "Webhook",
+      "webhookId": "632989e5-e74a-41a2-b34b-c620d583f01a"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "23805682-22c7-4742-a731-66eb46dcabf5",
+              "name": "mrTitle",
+              "value": "={{ $json.body.merge_request.title }}",
+              "type": "string"
+            },
+            {
+              "id": "97530f23-3625-497e-87d7-e58b13d9e7ff",
+              "name": "mrAuthorId",
+              "value": "={{ $json.body.merge_request.author_id }}",
+              "type": "string"
+            },
+            {
+              "id": "08edc2a0-f968-4992-9814-79e842b4833a",
+              "name": "mrLink",
+              "value": "={{ $json.body.merge_request.url }}",
+              "type": "string"
+            },
+            {
+              "id": "9a171afd-0595-4457-aad6-62ce574ea1f5",
+              "name": "commentAuthorId",
+              "value": "={{ $json.body.object_attributes.author_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        160
+      ],
+      "id": "29da9ea3-ae97-4cbe-8240-18b8141a2910",
+      "name": "Set Variables"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "register",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d372a304-546a-4efa-bb3d-6ae572a14ec1"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "register"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "2010d4ac-2457-4a78-8a16-04ae4fd7413f",
+                    "leftValue": "={{ $json.query.action }}",
+                    "rightValue": "comment",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "comment"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "d9ac1547-baf7-4053-84e8-c05808b2500b",
+                    "leftValue": "{{ $json.query.action }}",
+                    "rightValue": "help",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "help"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        180,
+        160
+      ],
+      "id": "d8fd3cfd-3dfe-476e-b71f-efa23898e269",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3db5dfb9-75b3-426a-8f47-cabcb2bada83",
+              "name": "token",
+              "value": "={{ $json.body.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        440,
+        -40
+      ],
+      "id": "e3c0bbe3-8ef6-473c-9733-fa736442e596",
+      "name": "Set register variables"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6cbec156-159a-4689-aef3-a9be25fa5e50",
+              "name": "gitlab_user_id",
+              "value": "={{ $('Get gitlab user').first().json.id }}",
+              "type": "number"
+            },
+            {
+              "id": "80d269ab-5510-4007-8398-7a3392587883",
+              "name": "gitlab_user_name",
+              "value": "={{ $('Get gitlab user').first().json.username }}",
+              "type": "string"
+            },
+            {
+              "id": "527ebef4-2ae2-4a00-a376-e203e3a0fb33",
+              "name": "gitlab_token",
+              "value": "={{ $('Set register variables').first().json.token }}",
+              "type": "string"
+            },
+            {
+              "id": "312c44be-b02e-44bd-b2d6-aca5d4ead62a",
+              "name": "mattermost_channel_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1100,
+        -40
+      ],
+      "id": "9c6165c7-2a3c-4589-928e-c7f46dae6032",
+      "name": "Set use register fields"
+    },
+    {
+      "parameters": {
+        "url": "=https://git.gss.com.tw/api/v4/users/{{ $json.commentAuthorId }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gitlabApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        180
+      ],
+      "id": "e7119908-876d-4767-862a-d63f19c945b1",
+      "name": "Get Comment Author Name",
+      "credentials": {
+        "gitlabApi": {
+          "id": "KD7tBMvK8uV7Cq6r",
+          "name": "GitLab n8n gitlab bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/channels/direct",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer REDACTED_TOKEN"
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').first().json.body.user_id }}\"\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -40
+      ],
+      "id": "1a37f1d8-e24d-4d6e-a2ba-73babcdcd4ef",
+      "name": "Create Direct Channel"
+    },
+    {
+      "parameters": {
+        "url": "https://git.gss.com.tw/api/v4/users",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "private_token",
+              "value": "={{ $json.token }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -40
+      ],
+      "id": "4e108334-a510-406a-b067-dfbaaa63e1a1",
+      "name": "Get gitlab user"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "collection": "gitLabUserConfig",
+        "updateKey": "gitlab_user_id",
+        "fields": "=gitlab_user_id, gitlab_user_name, gitlab_token, mattermost_channel_id",
+        "upsert": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        -40
+      ],
+      "id": "f59d413a-5cc8-407e-b68b-1925952fa4e7",
+      "name": "Insert user config",
+      "credentials": {
+        "mongoDb": {
+          "id": "AexjO8QxOz180D9o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "gitLabUserConfig",
+        "options": {},
+        "query": "={ \"gitlab_user_id\": {{ $('Set Variables').item.json.mrAuthorId }}  }"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        1100,
+        180
+      ],
+      "id": "0d5c71bf-ff93-4788-a7a3-39243f0fd7e7",
+      "name": "Get user config",
+      "credentials": {
+        "mongoDb": {
+          "id": "AexjO8QxOz180D9o",
+          "name": "MongoDB account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channelId": "={{ $('Get user config').first().json.mattermost_channel_id }}",
+        "message": "=💬 New Comment on MR: [{{ $('Set Variables').first().json.mrTitle }}]({{ $('Set Variables').first().json.mrLink }})\n\nFrom: {{ $('Get Comment Author Name').first().json.username }} \n\n--------------------------\n\n{{ $('Switch').item.json.body.object_attributes.note }}\n\n--------------------------",
+        "attachments": [],
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.mattermost",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        180
+      ],
+      "id": "7199ee1a-b5b7-4601-8067-dac9e6ad913c",
+      "name": "Send Mattermost message",
+      "credentials": {
+        "mattermostApi": {
+          "id": "AZX7XIC5sfzDvwew",
+          "name": "Mattermost account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/channels/direct",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer REDACTED_TOKEN"
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').first().json.body.user_id }}\"\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        340
+      ],
+      "id": "69d2123b-5352-4eda-8805-f22bd13921e0",
+      "name": "Create Direct Channel1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "08c7bedd-c1b2-4e9a-8803-55954ec89deb",
+              "leftValue": "={{ $json.mrAuthorId }}",
+              "rightValue": "={{ $json.commentAuthorId }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        160
+      ],
+      "id": "b9e1ef2c-7f0e-489f-8f21-60ab5193e68e",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Set register variables",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Direct Channel1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set register variables": {
+      "main": [
+        [
+          {
+            "node": "Get gitlab user",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set use register fields": {
+      "main": [
+        [
+          {
+            "node": "Insert user config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Comment Author Name": {
+      "main": [
+        [
+          {
+            "node": "Get user config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Direct Channel": {
+      "main": [
+        [
+          {
+            "node": "Set use register fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get gitlab user": {
+      "main": [
+        [
+          {
+            "node": "Create Direct Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get user config": {
+      "main": [
+        [
+          {
+            "node": "Send Mattermost message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Direct Channel1": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Get Comment Author Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d3184919-2cfe-4e83-96cd-9ad40f2d55e4",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
+  },
+  "id": "YSPjx2ERGq2gHhvE",
+  "tags": []
+}

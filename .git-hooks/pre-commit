@@ -1,8 +1,9 @@
 #!/bin/sh
-# Git pre-commit hook to filter sensitive information in "Bearer {token}" format
+# Git pre-commit hook to detect and replace sensitive information in "Bearer {token}" format
 # Save this file as .git/hooks/pre-commit (without file extension)
+# Make sure to run: chmod +x .git/hooks/pre-commit
 
-echo "Checking for Bearer tokens..."
+echo "Checking for Bearer REDACTED_TOKEN"
 
 # Get all files staged for commit
 files=$(git diff --cached --name-only --diff-filter=ACM)
@@ -15,6 +16,8 @@ fi
 
 # Check each file
 found_token=0
+files_modified=0
+
 for file in $files; do
     # Ensure file exists and is readable
     if [ ! -f "$file" ]; then
@@ -26,20 +29,41 @@ for file in $files; do
         continue
     fi
     
-    # Use grep to search for Bearer token patterns
+    # Use grep to search for Bearer REDACTED_TOKEN patterns
     if grep -q -E "Bearer\s+[A-Za-z0-9\-\._~\+\/]+" "$file" 2>/dev/null; then
-        echo "Found Bearer token in $file, please remove before committing"
-        grep -n -E "Bearer\s+[A-Za-z0-9\-\._~\+\/]+" "$file"
+        echo "Found Bearer REDACTED_TOKEN in $file, replacing with placeholder"
         found_token=1
+        
+        # Create a temporary file
+        temp_file=$(mktemp)
+        
+        # Replace Bearer REDACTED_TOKEN with placeholder and save to temp file
+        sed -E 's/(Bearer\s+)[A-Za-z0-9\-\._~\+\/]+/\1REDACTED_TOKEN/g' "$file" > "$temp_file"
+        
+        # Copy the temp file back to the original
+        cat "$temp_file" > "$file"
+        
+        # Remove the temp file
+        rm "$temp_file"
+        
+        # Stage the modified file
+        git add "$file"
+        
+        files_modified=$((files_modified + 1))
+        
+        echo "✓ Replaced Bearer REDACTED_TOKEN in $file with 'Bearer REDACTED_TOKEN'"
     fi
 done
 
-# If tokens are found, block the commit
+# If tokens were found, inform but allow the commit to proceed
 if [ $found_token -eq 1 ]; then
-    echo "Commit rejected: Please remove the Bearer tokens from the files above and try again."
-    echo "Tip: You can use 'git commit --no-verify' to force the commit, but this is not recommended."
-    exit 1
+    echo "Found and replaced Bearer REDACTED_TOKEN in $files_modified file(s)."
+    echo "Commit will proceed with the sanitized files."
+    echo "Note: If you didn't want to replace these tokens, you can abort with Ctrl+C and restore your files."
+    echo "      To restore, use 'git reset HEAD' and then 'git checkout -- <file>' for each modified file."
+    # Give the user a moment to abort if needed
+    sleep 2
 fi
 
-echo "No Bearer tokens found, commit proceeding."
+echo "No remaining Bearer REDACTED_TOKEN found, commit proceeding."
 exit 0
