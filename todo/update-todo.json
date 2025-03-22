@@ -201,7 +201,7 @@
           "parameters": [
             {
               "name": "text",
-              "value": "✅ Todo updated successfully!"
+              "value": "=🔥 Todo `{{$('Set Insert Data').first().json.text}}` updated successfully!"
             },
             {
               "name": "response_type",
@@ -330,7 +330,7 @@
     {
       "parameters": {
         "channelId": "={{ $json.id }}",
-        "message": "=✅ Todo updated successfully!",
+        "message": "=🔥 Todo `{{$('Set Insert Data').first().json.text}}` updated successfully!",
         "attachments": [],
         "otherOptions": {}
       },
