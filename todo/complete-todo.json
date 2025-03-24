@@ -59,6 +59,12 @@
               "name": "done",
               "value": "=:white_check_mark:",
               "type": "string"
+            },
+            {
+              "id": "19aba165-c21e-44c7-a04f-d8639cf3c890",
+              "name": "comment",
+              "value": "={{ $('Get Id').item.json.comment }}",
+              "type": "string"
             }
           ]
         },
@@ -78,7 +84,7 @@
         "operation": "update",
         "collection": "todo",
         "updateKey": "=_id",
-        "fields": "done",
+        "fields": "done,comment",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
@@ -237,7 +243,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input =  $input.first().json.body.text;\nconst regex = /\\d+(\\.\\d+)?/;\nlet id = null;\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[0]);\n}\nreturn {id}"
+        "jsCode": "const input = $input.first().json.body.text;\nconst regex = /(\\d+)\\s+(--comment=\"(.*)\")?/;\nlet id = null;\nlet comment = null;\n\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[1]);    \n    if (match[2]) {\n        comment = match[3];\n    }\n}\n\n// 返回包含 id 和可選的 comment 的對象\nreturn { id, comment };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -346,47 +352,7 @@
       ]
     }
   },
-  "pinData": {
-    "Webhook": [
-      {
-        "headers": {
-          "x-forwarded-proto": "http",
-          "x-forwarded-port": "8080",
-          "x-forwarded-for": "20.89.163.71:40576",
-          "x-original-url": "/todos?action=done",
-          "connection": "keep-alive",
-          "x-appgw-trace-id": "dda6a6f158c8c18d3a45a0ec25531f15",
-          "host": "130.33.207.158:8080",
-          "x-original-host": "130.33.207.158:8080",
-          "content-length": "598",
-          "user-agent": "Mattermost-Bot/1.1",
-          "accept": "application/json",
-          "authorization": "Token qkw1ho1zaj8w8dr5h4gxz43rpe",
-          "content-type": "application/x-www-form-urlencoded",
-          "accept-encoding": "gzip"
-        },
-        "params": {},
-        "query": {
-          "action": "done"
-        },
-        "body": {
-          "channel_id": "914h5rypyp8f58hknyhuqkq1se",
-          "channel_name": "okao1ypwzjbiimd5oxccq7hdch__okao1ypwzjbiimd5oxccq7hdch",
-          "command": "/todo-done",
-          "response_url": "https://chat.gss.tw/hooks/commands/3iotnbfxfpbipejmobgf9j1wjc",
-          "team_domain": "gss",
-          "team_id": "ryrniq9s6pggfxyoniqjpisxge",
-          "text": "4 --silent",
-          "token": "qkw1ho1zaj8w8dr5h4gxz43rpe",
-          "trigger_id": "NWVnYW9hNGhlcGJtdWo5ZHVrZWdoMWJkaXI6b2thbzF5cHd6amJpaW1kNW94Y2NxN2hkY2g6MTc0MjIyMzIyMjQ1MjpNRVFDSUI0NnVwa0NzYmZXNUFJVEU1TEsvWk53ckFWTkxJMmlGMHlEWG1sTnZlQlBBaUErc0ovN0JnNWkweWU5T1lQbEZGN2Mvd0o5bmNxWWZGYTZUMW5UUVpadTlRPT0=",
-          "user_id": "okao1ypwzjbiimd5oxccq7hdch",
-          "user_name": "devin"
-        },
-        "webhookUrl": "http://192.168.102.4/webhook-test/mattermost/todos",
-        "executionMode": "test"
-      }
-    ]
-  },
+  "pinData": {},
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"

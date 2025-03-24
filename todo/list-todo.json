@@ -25,7 +25,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\", \"created_at\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\", \"created_at\", \"comment\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -106,7 +106,7 @@
           "conditions": [
             {
               "id": "fac1d067-0739-409f-a012-97353e7a9dd1",
-              "leftValue": "={{ $json.body.text }}",
+              "leftValue": "={{ $('Webhook').item.json.body.text }}",
               "rightValue": "all",
               "operator": {
                 "type": "string",
@@ -273,7 +273,7 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer"
+              "value": ""
             },
             {}
           ]
