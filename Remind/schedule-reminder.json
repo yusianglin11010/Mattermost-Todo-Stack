@@ -5,8 +5,8 @@
         "rule": {
           "interval": [
             {
-              "field": "seconds",
-              "secondsInterval": 5
+              "field": "minutes",
+              "minutesInterval": 2
             }
           ]
         }
@@ -22,6 +22,114 @@
     },
     {
       "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        180
+      ],
+      "id": "0515b180-5dc8-43e1-ad61-b0e179ffc788",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "collection": "todo",
+        "options": {},
+        "query": "={\"$and\":[{\"channel_id\": \"{{$('Set Loop Item').item.json.channel_id}}\"},{\"done\":\":x:\"}]}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        2180,
+        180
+      ],
+      "id": "6259a3fb-1a8a-404a-802e-038b92812730",
+      "name": "Find Undone Todo",
+      "alwaysOutputData": true,
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1500,
+        80
+      ],
+      "id": "06a4a923-c9b4-450f-bd84-d8a0ba2417bf",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {},
+      "id": "cae59239-c691-429c-ad31-df9259f914b5",
+      "name": "Done",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2200,
+        -20
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "findOneAndUpdate",
+        "collection": "remind",
+        "updateKey": "_id",
+        "fields": "=last_triggered_at",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        3280,
+        180
+      ],
+      "id": "71bbd577-221e-41d6-8deb-f90007f0d9ed",
+      "name": "Update Last Triggered Time",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "channelId": "={{ $('Set Loop Item').first().json.notify_channel_id }}",
+        "message": "=### ⏰ Remind Todo From {{ $json.channel_name }}\n\n{{ $json.markdownTable }}",
+        "attachments": [],
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.mattermost",
+      "typeVersion": 1,
+      "position": [
+        2880,
+        180
+      ],
+      "id": "26ddee6f-c9ea-4235-9aa6-c0c5a380177e",
+      "name": "Mattermost",
+      "credentials": {
+        "mattermostApi": {
+          "id": "QSV4fNtIj04Jhody",
+          "name": "Mattermost account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
         "collection": "remind",
         "options": {},
         "query": "{\"enable\":true}"
@@ -33,7 +141,7 @@
         100
       ],
       "id": "8537b341-ced2-4ee8-943a-4b7c8decd9a1",
-      "name": "MongoDB",
+      "name": "Find Reminds",
       "credentials": {
         "mongoDb": {
           "id": "n2QrVu9KS1tKt3TQ",
@@ -43,16 +151,50 @@
     },
     {
       "parameters": {
-        "jsCode": "const cronParser = require('cron-parser')\nconst processedItems = []\n\nfor (const inp of $input.all()) {\n  let item = inp.json;\n  const cronExpressions = item.notification_schedules\n  const lastScrape = item.last_scrape // Last moment the site has been checked/scraped (Unix timestamp)\n  let shouldRun = false\n  if (cronExpressions?.length) {\n\n    // Check if last scrape falls within the current window\n      const interval = cronParser.parseExpression(cronExpressions.trim())\n      const prevRunTime = Math.floor(interval.prev().getTime() / 1000)\n      if (lastScrape < prevRunTime)\n      {\n        shouldRun = true\n      }\n  }\n    processedItems.push({\n    ...item,\n    shouldRun\n  })\n}\n\nreturn processedItems"
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3401223e-035a-4628-b32d-615d385974de",
+              "name": "channel_name",
+              "value": "={{ $json.channel_name }}",
+              "type": "string"
+            },
+            {
+              "id": "a3c92b67-431c-40fe-972e-1a54da948569",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "062033ed-4d33-4555-b673-f5f55e455585",
+              "name": "notify_channel_id",
+              "value": "={{ $json.notify_channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "90c691c8-1e57-49d1-a94d-81624b7e67dd",
+              "name": "channel_id",
+              "value": "={{ $json.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "067eae7a-802d-4649-ad4c-b004099eb948",
+              "name": "_id",
+              "value": "={{ $json._id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
       },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        980,
-        100
+        1720,
+        180
       ],
-      "id": "18fc0bf1-c667-4ebd-8aa3-a9f063f59b81",
-      "name": "Code"
+      "id": "c078557b-5d8d-4262-815a-99dc5e55c913",
+      "name": "Set Loop Item"
     },
     {
       "parameters": {
@@ -99,6 +241,18 @@
               "name": "id",
               "value": "={{ $json.id }}",
               "type": "string"
+            },
+            {
+              "id": "ab247c67-56e2-4b60-8f6c-eb29d0c15d43",
+              "name": "channel_name",
+              "value": "={{ $json.channel_name }}",
+              "type": "string"
+            },
+            {
+              "id": "03fc063c-5fc8-4505-abb5-910d37f19262",
+              "name": "_id",
+              "value": "={{ $json._id }}",
+              "type": "string"
             }
           ]
         },
@@ -111,7 +265,20 @@
         100
       ],
       "id": "86ee7ffd-9b00-4f50-9fcb-e3e76d2b0749",
-      "name": "Edit Fields"
+      "name": "Set Variables"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cronParser = require('cron-parser')\nconst processedItems = []\n\nfor (const inp of $input.all()) {\n  let item = inp.json;\n  const cronExpressions = item.notification_schedules\n  const lastScrape = item.last_scrape // Last moment the site has been checked/scraped (Unix timestamp)\n  let shouldRun = false\n  if (cronExpressions?.length) {\n\n    // Check if last scrape falls within the current window\n      const interval = cronParser.parseExpression(cronExpressions.trim())\n      const prevRunTime = Math.floor(interval.prev().getTime() / 1000)\n      if (lastScrape < prevRunTime)\n      {\n        shouldRun = true\n      }\n  }\n    processedItems.push({\n    ...item,\n    shouldRun\n  })\n}\n\nreturn processedItems"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        980,
+        100
+      ],
+      "id": "18fc0bf1-c667-4ebd-8aa3-a9f063f59b81",
+      "name": "Determine Should Run"
     },
     {
       "parameters": {
@@ -145,7 +312,7 @@
         100
       ],
       "id": "623886dd-f93f-4cbd-8f30-b60136051b94",
-      "name": "If"
+      "name": "If Should Run"
     },
     {
       "parameters": {
@@ -156,6 +323,12 @@
               "name": "markdownTable",
               "value": "={{ $json.markdownTable }}",
               "type": "string"
+            },
+            {
+              "id": "51f1c873-b82e-4a37-8243-a53993634961",
+              "name": "channel_name",
+              "value": "={{ $('Set Loop Item').first().json.channel_name }}",
+              "type": "string"
             }
           ]
         },
@@ -164,132 +337,11 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2100,
-        140
+        2660,
+        180
       ],
       "id": "0c155c85-46b5-4efb-a9a0-736025d7a8f5",
-      "name": "Set Values1"
-    },
-    {
-      "parameters": {
-        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"user_name\", \"text\", \"assignee\", \"done\", \"priority\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
-      },
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [
-        1940,
-        140
-      ],
-      "id": "0515b180-5dc8-43e1-ad61-b0e179ffc788",
-      "name": "Convert to md table",
-      "alwaysOutputData": true
-    },
-    {
-      "parameters": {
-        "collection": "todo",
-        "options": {},
-        "query": "={\"$and\":[{\"channel_id\": \"{{ $json.channel_id }}\"},{\"done\":\":x:\"}]}"
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.1,
-      "position": [
-        1780,
-        140
-      ],
-      "id": "6259a3fb-1a8a-404a-802e-038b92812730",
-      "name": "Find Undone Todo",
-      "credentials": {
-        "mongoDb": {
-          "id": "n2QrVu9KS1tKt3TQ",
-          "name": "BizForm Dev"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "options": {
-          "reset": true
-        }
-      },
-      "type": "n8n-nodes-base.splitInBatches",
-      "typeVersion": 3,
-      "position": [
-        1500,
-        80
-      ],
-      "id": "06a4a923-c9b4-450f-bd84-d8a0ba2417bf",
-      "name": "Loop Over Items"
-    },
-    {
-      "parameters": {},
-      "id": "cae59239-c691-429c-ad31-df9259f914b5",
-      "name": "Done",
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [
-        1760,
-        -20
-      ],
-      "disabled": true
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://chat.gss.tw/api/v4/posts",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "Authorization",
-              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "channel_id",
-              "value": "={{ $('Loop Over Items').first().json.notify_channel_id }}"
-            },
-            {
-              "name": "message",
-              "value": "={{ $json.markdownTable }}"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [
-        2320,
-        140
-      ],
-      "id": "f2e8fffe-92f7-4de0-b402-a59206a743a6",
-      "name": "HTTP Request"
-    },
-    {
-      "parameters": {
-        "operation": "findOneAndUpdate",
-        "collection": "remind",
-        "fields": "=last_triggered_at",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.mongoDb",
-      "typeVersion": 1.1,
-      "position": [
-        2780,
-        140
-      ],
-      "id": "71bbd577-221e-41d6-8deb-f90007f0d9ed",
-      "name": "Update Last Triggered Time",
-      "credentials": {
-        "mongoDb": {
-          "id": "n2QrVu9KS1tKt3TQ",
-          "name": "BizForm Dev"
-        }
-      }
+      "name": "Set Message Variables"
     },
     {
       "parameters": {
@@ -298,14 +350,14 @@
             {
               "id": "881fabb2-21f9-4f92-9f61-75395220b6ab",
               "name": "last_triggered_at",
-              "value": "={{ $now.toMillis()/1000 }}",
+              "value": "={{ $now.toSeconds().round() }}",
               "type": "number"
             },
             {
               "id": "9bae2921-dc56-480e-bd5f-5467ace0a706",
-              "name": "id",
-              "value": "={{ $('Loop Over Items').first().json.id }}",
-              "type": "number"
+              "name": "_id",
+              "value": "={{ $('Replace \"').first().json._id }}",
+              "type": "string"
             }
           ]
         },
@@ -314,48 +366,34 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2540,
-        140
+        3060,
+        180
       ],
       "id": "a9646157-b16b-46e2-839e-c2fc549149be",
-      "name": "Edit Fields1"
+      "name": "Update Last Triggered Time1"
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "https://chat.gss.tw/api/v4/posts",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
+        "assignments": {
+          "assignments": [
             {
-              "name": "Authorization",
-              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
-            }
-          ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "parameters": [
-            {
-              "name": "channel_id",
-              "value": "={{ $('Loop Over Items').first().json.notify_channel_id }}"
-            },
-            {
-              "name": "message",
-              "value": "={{ $json.markdownTable }}"
+              "id": "64166ad5-945a-43c4-9d39-786093f60456",
+              "name": "_id",
+              "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+              "type": "string"
             }
           ]
         },
         "options": {}
       },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
       "position": [
-        2200,
-        -120
+        1940,
+        180
       ],
-      "id": "224948ea-2bae-4e0a-a777-e709f57ddc16",
-      "name": "HTTP Request1"
+      "id": "6760ee98-dbf2-4d28-9081-d27191bbb5d5",
+      "name": "Replace \""
     }
   ],
   "connections": {
@@ -363,62 +401,7 @@
       "main": [
         [
           {
-            "node": "MongoDB",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "MongoDB": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Code": {
-      "main": [
-        [
-          {
-            "node": "If",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Edit Fields": {
-      "main": [
-        [
-          {
-            "node": "Code",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "If": {
-      "main": [
-        [
-          {
-            "node": "Loop Over Items",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Set Values1": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
+            "node": "Find Reminds",
             "type": "main",
             "index": 0
           }
@@ -429,7 +412,7 @@
       "main": [
         [
           {
-            "node": "Set Values1",
+            "node": "Set Message Variables",
             "type": "main",
             "index": 0
           }
@@ -458,18 +441,7 @@
         ],
         [
           {
-            "node": "Find Undone Todo",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Edit Fields1",
+            "node": "Set Loop Item",
             "type": "main",
             "index": 0
           }
@@ -487,11 +459,99 @@
         ]
       ]
     },
-    "Edit Fields1": {
+    "Mattermost": {
+      "main": [
+        [
+          {
+            "node": "Update Last Triggered Time1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Find Reminds": {
+      "main": [
+        [
+          {
+            "node": "Set Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Loop Item": {
+      "main": [
+        [
+          {
+            "node": "Replace \"",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Variables": {
+      "main": [
+        [
+          {
+            "node": "Determine Should Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Determine Should Run": {
+      "main": [
+        [
+          {
+            "node": "If Should Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Should Run": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Message Variables": {
+      "main": [
+        [
+          {
+            "node": "Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Last Triggered Time1": {
       "main": [
         [
           {
             "node": "Update Last Triggered Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace \"": {
+      "main": [
+        [
+          {
+            "node": "Find Undone Todo",
             "type": "main",
             "index": 0
           }

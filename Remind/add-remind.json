@@ -9,10 +9,10 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
-        -1120,
-        120
+        -1580,
+        1020
       ],
-      "id": "67cf0879-c18a-431d-9edd-1c3262968dfb",
+      "id": "0aabf0a0-dcc6-45bc-9678-7de8cd23c818",
       "name": "Webhook",
       "webhookId": "32321ca6-2529-4862-8705-ce9aa02be0fa"
     },
@@ -49,26 +49,26 @@
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
       "position": [
-        -920,
-        120
+        -1380,
+        1020
       ],
-      "id": "492af6a3-c43d-49d8-be64-a73d745d8a75",
+      "id": "2836f0e6-ff87-438b-9e30-82ddbfadde78",
       "name": "Switch"
     },
     {
       "parameters": {
         "operation": "insert",
         "collection": "remind",
-        "fields": "id,enable,when,channel_id,last_triggered_at,creator_id,notify_channel_id",
+        "fields": "id,enable,when,channel_id,last_triggered_at,creator_id,notify_channel_id,channel_name",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        1400,
-        120
+        2080,
+        1180
       ],
-      "id": "66905f1f-b632-4087-9c50-8091b8d60d4b",
+      "id": "de608799-a1e1-4ab3-a20d-5b4fc62c667d",
       "name": "MongoDB",
       "credentials": {
         "mongoDb": {
@@ -92,10 +92,10 @@
       "type": "n8n-nodes-base.summarize",
       "typeVersion": 1.1,
       "position": [
-        0,
-        200
+        -460,
+        1100
       ],
-      "id": "8865ed76-a217-4242-9dd1-756892abbfd3",
+      "id": "dbdfea36-8ba3-43ac-95ba-a90c858c21d8",
       "name": "Get Max Id"
     },
     {
@@ -115,10 +115,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        200,
-        200
+        -260,
+        1100
       ],
-      "id": "0700e86d-108d-480f-8452-f6f9b61bde9d",
+      "id": "eb66e888-ba04-4296-a5c3-1139caec272e",
       "name": "Set Max ID + 1"
     },
     {
@@ -138,10 +138,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        0,
-        0
+        -460,
+        900
       ],
-      "id": "5a53dde8-1623-4ffd-a524-ca9e517cc810",
+      "id": "dd026cde-a537-4c20-aa98-f0d66a88c484",
       "name": "Set Id 1"
     },
     {
@@ -153,10 +153,10 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        -420,
-        120
+        -880,
+        1020
       ],
-      "id": "1a06355a-672f-4b74-8a2b-e7c9623f6d9a",
+      "id": "c436f7a6-f007-47e3-a0c0-0bbd7a786c29",
       "name": "Find All Existed Reminds",
       "alwaysOutputData": true,
       "credentials": {
@@ -194,10 +194,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        -200,
-        120
+        -660,
+        1020
       ],
-      "id": "34b0ebfa-0a8f-485d-a553-730257e8265f",
+      "id": "0eba588d-6563-496b-858e-a21933eb5663",
       "name": "If Exists Reminds"
     },
     {
@@ -207,7 +207,7 @@
             {
               "id": "e2a00ba9-7ea5-4ca6-9cc9-ccb3e90cdffe",
               "name": "notify_channel_id",
-              "value": "={{ $json.channel_id }}",
+              "value": "={{ $json. channel_id}}",
               "type": "string"
             },
             {
@@ -245,6 +245,18 @@
               "name": "channel_id",
               "value": "={{ $('Webhook').item.json.body.channel_id }}",
               "type": "string"
+            },
+            {
+              "id": "dd416097-6181-4c31-8ce0-e9a8d6f72da0",
+              "name": "channel_name",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "4222484a-8e8e-4348-ae6a-4d1749267993",
+              "name": "channel_name",
+              "value": "={{ $json.channel_name }}",
+              "type": "string"
             }
           ]
         },
@@ -253,10 +265,10 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        1140,
-        120
+        1820,
+        1180
       ],
-      "id": "d7440ee8-51d4-46e9-b98b-a8fae1fa0874",
+      "id": "70bceb12-8801-4a9a-a696-ff694ba1db1c",
       "name": "Set Insert Values",
       "alwaysOutputData": true,
       "onError": "continueRegularOutput"
@@ -265,13 +277,13 @@
       "parameters": {
         "jsCode": "const input = $input.first().json.body.text\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /--([\\w-]+)=([\\w\\s!@#$%^&*()\\p{L}.]+)|-([\\w])=([\\w\\s!@#$%^&*()\\p{L}.]+)/gu;\n\nlet matches;\nlet when = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'when') {\n        when = value;\n    }\n}\n\n// Return the results\nreturn { when };"
       },
-      "id": "f02fab1f-b094-41ed-b3fd-93540bcc4d21",
+      "id": "a04828da-7857-41d7-b8af-4efbb6728e83",
       "name": "Todo Creation Arg Converter1",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        -680,
-        120
+        -1140,
+        1020
       ]
     },
     {
@@ -283,9 +295,8 @@
           "parameters": [
             {
               "name": "Authorization",
-              "value": "Bearer 7isz736ih7btmpmngjhyiy43uo"
-            },
-            {}
+              "value": ""
+            }
           ]
         },
         "sendBody": true,
@@ -296,10 +307,10 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [
-        640,
-        20
+        1100,
+        1080
       ],
-      "id": "9af35385-d0e0-4db6-a3bd-0cb69a0e9f97",
+      "id": "d314741e-6741-4422-8bc5-de4a55a21707",
       "name": "Create Direct Channel"
     },
     {
@@ -329,10 +340,10 @@
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
-        420,
-        120
+        -40,
+        1020
       ],
-      "id": "f4153717-e1c8-4461-8850-c3b8d9d48571",
+      "id": "b4e17fbd-1816-4f73-9682-d5cd0655fe93",
       "name": "Is Personal Channel"
     },
     {
@@ -344,28 +355,11 @@
               "name": "channel_id",
               "value": "={{ $('Webhook').item.json.body.channel_id }}",
               "type": "string"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
-      "position": [
-        760,
-        240
-      ],
-      "id": "471b23f8-90fe-4d84-936e-b7b730580d11",
-      "name": "Set Channel"
-    },
-    {
-      "parameters": {
-        "assignments": {
-          "assignments": [
+            },
             {
-              "id": "a364017d-9fc9-47a1-88b3-d8f74d10558a",
-              "name": "channel_id",
-              "value": "={{ $('Create Direct Channel').first().json.id }}",
+              "id": "f5eb91b0-12a2-4749-8ece-9e109eecbe22",
+              "name": "channel_name",
+              "value": "={{ $json.display_name }}",
               "type": "string"
             }
           ]
@@ -375,11 +369,146 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        860,
-        20
+        1020,
+        1340
       ],
-      "id": "43e000a5-fa91-4e84-9ef0-c1dfa0950816",
-      "name": "Set Channel Id To Bot Channel"
+      "id": "27aaf3e7-20d7-4770-a5d9-4232aa7dd36a",
+      "name": "Set Channel"
+    },
+    {
+      "parameters": {
+        "url": "=https://chat.gss.tw/api/v4/users/{{ $json.ids }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        900,
+        700
+      ],
+      "id": "e3e2d2e4-643f-48ab-bb59-b6b81ec30bcb",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "let a = $('Webhook').first().json.body.channel_name.split(\"__\");\nreturn {ids: a};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        700
+      ],
+      "id": "c16e0fab-7762-49fc-8465-e08729ca0cff",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "ids",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        660,
+        700
+      ],
+      "id": "0d82b701-b577-410b-b8a8-17494c8ccf20",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "fieldsToAggregate": {
+          "fieldToAggregate": [
+            {
+              "fieldToAggregate": "username"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1120,
+        700
+      ],
+      "id": "1ff5c2a9-15ad-4d4b-b244-045b2e744621",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nlet a = $input.first().json.username.join(\" & \")\nreturn {channel_name: a}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1340,
+        700
+      ],
+      "id": "5944be7f-5269-45a3-bf03-d61998d50024",
+      "name": "Generate Channel Name"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "552da440-f998-42a0-a07d-d5e048375e76",
+              "name": "channel_id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "b535961c-8ecb-499a-96c4-e8c3ec48a652",
+              "name": "channel_name",
+              "value": "={{ $('Generate Channel Name').item.json.channel_name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1400,
+        1080
+      ],
+      "id": "e1bf0c7d-95a4-4353-84d2-7b2e4d841c07",
+      "name": "Set Channel1"
+    },
+    {
+      "parameters": {
+        "url": "=https://chat.gss.tw/api/v4/channels/{{ $('Webhook').item.json.body.channel_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": ""
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        1200
+      ],
+      "id": "c6872ab2-72fc-46a3-8850-f7d3de2e95b0",
+      "name": "Get Channel Info"
     }
   ],
   "connections": {
@@ -493,7 +622,7 @@
       "main": [
         [
           {
-            "node": "Set Channel Id To Bot Channel",
+            "node": "Set Channel1",
             "type": "main",
             "index": 0
           }
@@ -504,14 +633,14 @@
       "main": [
         [
           {
-            "node": "Create Direct Channel",
+            "node": "Code",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Set Channel",
+            "node": "Get Channel Info",
             "type": "main",
             "index": 0
           }
@@ -529,11 +658,77 @@
         ]
       ]
     },
-    "Set Channel Id To Bot Channel": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Generate Channel Name",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Channel Name": {
+      "main": [
+        [
+          {
+            "node": "Create Direct Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Channel1": {
       "main": [
         [
           {
             "node": "Set Insert Values",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Channel Info": {
+      "main": [
+        [
+          {
+            "node": "Set Channel",
             "type": "main",
             "index": 0
           }
