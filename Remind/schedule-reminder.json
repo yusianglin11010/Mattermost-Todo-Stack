@@ -27,7 +27,7 @@
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        2180,
+        2400,
         180
       ],
       "id": "0515b180-5dc8-43e1-ad61-b0e179ffc788",
@@ -43,7 +43,7 @@
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        1960,
+        2180,
         180
       ],
       "id": "6259a3fb-1a8a-404a-802e-038b92812730",
@@ -78,7 +78,7 @@
       "type": "n8n-nodes-base.noOp",
       "typeVersion": 1,
       "position": [
-        1980,
+        2200,
         -20
       ],
       "disabled": true
@@ -87,13 +87,14 @@
       "parameters": {
         "operation": "findOneAndUpdate",
         "collection": "remind",
+        "updateKey": "_id",
         "fields": "=last_triggered_at",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
       "typeVersion": 1.1,
       "position": [
-        3060,
+        3280,
         180
       ],
       "id": "71bbd577-221e-41d6-8deb-f90007f0d9ed",
@@ -115,7 +116,7 @@
       "type": "n8n-nodes-base.mattermost",
       "typeVersion": 1,
       "position": [
-        2660,
+        2880,
         180
       ],
       "id": "26ddee6f-c9ea-4235-9aa6-c0c5a380177e",
@@ -174,6 +175,12 @@
               "id": "90c691c8-1e57-49d1-a94d-81624b7e67dd",
               "name": "channel_id",
               "value": "={{ $json.channel_id }}",
+              "type": "string"
+            },
+            {
+              "id": "067eae7a-802d-4649-ad4c-b004099eb948",
+              "name": "_id",
+              "value": "={{ $json._id }}",
               "type": "string"
             }
           ]
@@ -239,6 +246,12 @@
               "id": "ab247c67-56e2-4b60-8f6c-eb29d0c15d43",
               "name": "channel_name",
               "value": "={{ $json.channel_name }}",
+              "type": "string"
+            },
+            {
+              "id": "03fc063c-5fc8-4505-abb5-910d37f19262",
+              "name": "_id",
+              "value": "={{ $json._id }}",
               "type": "string"
             }
           ]
@@ -324,7 +337,7 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2440,
+        2660,
         180
       ],
       "id": "0c155c85-46b5-4efb-a9a0-736025d7a8f5",
@@ -342,9 +355,9 @@
             },
             {
               "id": "9bae2921-dc56-480e-bd5f-5467ace0a706",
-              "name": "id",
-              "value": "={{ $('Set Loop Item').first().json.id }}",
-              "type": "number"
+              "name": "_id",
+              "value": "={{ $('Replace \"').first().json._id }}",
+              "type": "string"
             }
           ]
         },
@@ -353,11 +366,34 @@
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.4,
       "position": [
-        2840,
+        3060,
         180
       ],
       "id": "a9646157-b16b-46e2-839e-c2fc549149be",
       "name": "Update Last Triggered Time1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "64166ad5-945a-43c4-9d39-786093f60456",
+              "name": "_id",
+              "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1940,
+        180
+      ],
+      "id": "6760ee98-dbf2-4d28-9081-d27191bbb5d5",
+      "name": "Replace \""
     }
   ],
   "connections": {
@@ -449,7 +485,7 @@
       "main": [
         [
           {
-            "node": "Find Undone Todo",
+            "node": "Replace \"",
             "type": "main",
             "index": 0
           }
@@ -505,6 +541,17 @@
         [
           {
             "node": "Update Last Triggered Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Replace \"": {
+      "main": [
+        [
+          {
+            "node": "Find Undone Todo",
             "type": "main",
             "index": 0
           }
