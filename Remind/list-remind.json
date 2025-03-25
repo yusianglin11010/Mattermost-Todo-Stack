@@ -1,0 +1,305 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "ff299a25-5080-4fd1-99d5-2ee498f1e726",
+      "name": "Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Access incoming data\nconst data = items.map(item => item.json);\n\n// Define the table columns\nconst headers = [\"id\", \"enable\", \"when\", \"last_triggered_at\"];\n\n// Create the header row for Markdown\nlet markdownTable = `| ${headers.join(\" | \")} |\\n`;\nmarkdownTable += `|${headers.map(() => \":---\").join(\"|\")}|\\n`;\n\n// Loop through the array and create rows for the table\ndata.forEach(row => {\n  const tableRow = headers.map(header => row[header] || \"\").join(\" | \");\n  markdownTable += `| ${tableRow} |\\n`;\n});\n\n// Return the Markdown table as output\nreturn [{\n  json: {\n    markdownTable\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        740,
+        0
+      ],
+      "id": "245bfdf5-28f4-4b42-b358-1930686b8e50",
+      "name": "Convert to md table",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "content": "透過 body parameter 的方式，避免使用 json \\n 會直接被 evaluate 導致回傳後 json 格式出錯\n",
+        "height": 280,
+        "width": 380
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1100,
+        140
+      ],
+      "id": "d0e6f396-a8ad-427e-8969-408028a434d2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Webhook').first().json.body.response_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ $json.markdownTable }}"
+            },
+            {
+              "name": "response_type",
+              "value": "in_channel"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1260,
+        240
+      ],
+      "id": "ff98b0de-fabc-4dce-9a79-d4502af90daf",
+      "name": "Response to Channel"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "3dea5247-0932-432e-93f8-c0eef19629fa",
+              "leftValue": "={{ $('Webhook').first().json.body.text }}",
+              "rightValue": "--silent",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        980,
+        0
+      ],
+      "id": "a0a9ce44-e9af-434c-89f1-785744d652ff",
+      "name": "Is Silent"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://chat.gss.tw/api/v4/channels/direct",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": ""
+            },
+            {}
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').first().json.body.user_id }}\"\n]",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        -80
+      ],
+      "id": "9d74ed6a-4f48-4eec-b755-38de1c52089e",
+      "name": "Create Direct Channel"
+    },
+    {
+      "parameters": {
+        "channelId": "={{ $json.id }}",
+        "message": "={{ $('Convert to md table').item.json.markdownTable }}",
+        "attachments": [],
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.mattermost",
+      "typeVersion": 1,
+      "position": [
+        1500,
+        -80
+      ],
+      "id": "63ae9db5-8a36-4651-8b91-a9a32bf7bba7",
+      "name": "Mattermost",
+      "credentials": {
+        "mattermostApi": {
+          "id": "QSV4fNtIj04Jhody",
+          "name": "Mattermost account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "collection": "remind",
+        "options": {},
+        "query": "={\"channel_id\":\"{{ $json.body.channel_id }}\"}"
+      },
+      "type": "n8n-nodes-base.mongoDb",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        0
+      ],
+      "id": "d177220c-0340-458c-892a-ce242aa1515a",
+      "name": "MongoDB",
+      "credentials": {
+        "mongoDb": {
+          "id": "n2QrVu9KS1tKt3TQ",
+          "name": "BizForm Dev"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "250b0771-801d-446b-b93a-6e9b8d4d1f4e",
+              "name": "id",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            },
+            {
+              "id": "e5a006b3-92fc-4d97-a0f3-06a1df053cb7",
+              "name": "when",
+              "value": "={{ $json.when }}",
+              "type": "string"
+            },
+            {
+              "id": "62239952-fe0b-4943-9b9d-905340ad2ea3",
+              "name": "last_triggered_at",
+              "value": "={{ $json.last_triggered_at.toDateTime('s').format('yyyy-MM-dd HH:MM') }}",
+              "type": "string"
+            },
+            {
+              "id": "0f333429-4a4a-4a8d-b0b0-c2358e274b60",
+              "name": "enable",
+              "value": "={{ $json.enable }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        500,
+        0
+      ],
+      "id": "2d0d65f3-bd54-4eef-af75-53932db484bf",
+      "name": "Set Table Data"
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "MongoDB",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to md table": {
+      "main": [
+        [
+          {
+            "node": "Is Silent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Silent": {
+      "main": [
+        [
+          {
+            "node": "Create Direct Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Response to Channel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Direct Channel": {
+      "main": [
+        [
+          {
+            "node": "Mattermost",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MongoDB": {
+      "main": [
+        [
+          {
+            "node": "Set Table Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Table Data": {
+      "main": [
+        [
+          {
+            "node": "Convert to md table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
+  }
+}
