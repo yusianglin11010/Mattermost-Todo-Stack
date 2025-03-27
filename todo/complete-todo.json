@@ -243,7 +243,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json.body.text;\nconst regex = /(\\d+)\\s+(--comment=\"(.*)\")?/;\nlet id = null;\nlet comment = null;\n\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[1]);    \n    if (match[2]) {\n        comment = match[3];\n    }\n}\n\n// 返回包含 id 和可選的 comment 的對象\nreturn { id, comment };"
+        "jsCode": "const input = $input.first().json.body.text;\nconst regex = /(\\d+)\\s*(--comment=\"(.*)\")?/;\nlet id = null;\nlet comment = null;\n\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[1]);    \n    if (match[2]) {\n        comment = match[3];\n    }\n}\n\n// 返回包含 id 和可選的 comment 的對象\nreturn { id, comment };"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

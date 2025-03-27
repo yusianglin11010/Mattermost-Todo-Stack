@@ -1,0 +1,353 @@
+{
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "4644b1ce-795e-4829-9990-2209e50e1229",
+        "name": "Webhook"
+      },
+      {
+        "parameters": {
+          "jsCode": "const input = $input.first().json.body.text;\nconst regex = /(\\d+)/;\nlet id = null;\n\nconst match = input.match(regex);\nif (match) {\n    id = Number(match[1]);    \n}\n\n// 返回包含 id 和可選的 comment 的對象\nreturn { id };"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          220,
+          0
+        ],
+        "id": "48cafc24-abe4-46f5-a1ea-c6eeb9533c94",
+        "name": "Get Id"
+      },
+      {
+        "parameters": {
+          "collection": "remind",
+          "options": {},
+          "query": "={\"$and\":[{\"channel_id\": \"{{ $('Webhook').first().json.body.channel_id }}\"},{\"id\":{{ $json.id }}}]}"
+        },
+        "type": "n8n-nodes-base.mongoDb",
+        "typeVersion": 1.1,
+        "position": [
+          440,
+          0
+        ],
+        "id": "4edf000c-de0b-4e5f-b719-5fbd618bc79f",
+        "name": "Find Todo By Id",
+        "credentials": {
+          "mongoDb": {
+            "id": "n2QrVu9KS1tKt3TQ",
+            "name": "BizForm Dev"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "10f4ab02-7c65-49d2-9f8b-3be363f5a408",
+                "name": "_id",
+                "value": "={{ $json._id }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          700,
+          0
+        ],
+        "id": "720892a5-eef7-4fb1-862f-73ee86515647",
+        "name": "Set Id Field"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "9739ca52-42f0-4775-b251-c0db1058b0d4",
+                "name": "_id",
+                "value": "={{ $json._id.replace(/\\\"/g, \"\") }}",
+                "type": "string"
+              },
+              {
+                "id": "b6adae5e-4c7c-49b1-935e-cad4490d23c8",
+                "name": "enable",
+                "value": "=false",
+                "type": "boolean"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          900,
+          0
+        ],
+        "id": "62ee8bb5-2e4a-44f1-b474-5efaed3f6760",
+        "name": "Set Id & Replace \""
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "collection": "remind",
+          "updateKey": "=_id",
+          "fields": "enable",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.mongoDb",
+        "typeVersion": 1.1,
+        "position": [
+          1100,
+          0
+        ],
+        "id": "f836fcc2-8d7e-4c09-b561-1b55b3185771",
+        "name": "Complete Todo",
+        "credentials": {
+          "mongoDb": {
+            "id": "n2QrVu9KS1tKt3TQ",
+            "name": "BizForm Dev"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "\n## avoid double quote",
+          "height": 260,
+          "width": 300
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          800,
+          -60
+        ],
+        "id": "189f4d44-7fb8-4a83-bf04-ce0b5f04cf80",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "={{ $('Webhook').item.json.body.response_url }}",
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {
+                "name": "text",
+                "value": "=Remind turn off 🤫"
+              },
+              {
+                "name": "response_type",
+                "value": "in_channel"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1560,
+          120
+        ],
+        "id": "9e499c73-3d48-4d5f-85d7-329017b2e638",
+        "name": "HTTP Request"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "3dea5247-0932-432e-93f8-c0eef19629fa",
+                "leftValue": "={{ $('Webhook').first().json.body.text }}",
+                "rightValue": "--silent",
+                "operator": {
+                  "type": "string",
+                  "operation": "contains"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          1360,
+          80
+        ],
+        "id": "adb0c60f-2d62-4375-b921-10ddae833526",
+        "name": "Is Silent"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://chat.gss.tw/api/v4/channels/direct",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Authorization",
+                "value": ""
+              },
+              {}
+            ]
+          },
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "=[\n  \"y4dk4y9x1bbu8f7bkfpenmexow\",\n\"{{ $('Webhook').first().json.body.user_id }}\"\n]",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          1560,
+          -80
+        ],
+        "id": "87f072bb-0fde-4c17-a77f-bc3936a87091",
+        "name": "Create Direct Channel"
+      },
+      {
+        "parameters": {
+          "channelId": "={{ $json.id }}",
+          "message": "=Remind turn off 🤫",
+          "attachments": [],
+          "otherOptions": {}
+        },
+        "type": "n8n-nodes-base.mattermost",
+        "typeVersion": 1,
+        "position": [
+          1780,
+          -80
+        ],
+        "id": "ede2a40e-db0c-4f06-809e-153024eee8ff",
+        "name": "Mattermost",
+        "credentials": {
+          "mattermostApi": {
+            "id": "QSV4fNtIj04Jhody",
+            "name": "Mattermost account 2"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Webhook": {
+        "main": [
+          [
+            {
+              "node": "Get Id",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Id": {
+        "main": [
+          [
+            {
+              "node": "Find Todo By Id",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Find Todo By Id": {
+        "main": [
+          [
+            {
+              "node": "Set Id Field",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Id Field": {
+        "main": [
+          [
+            {
+              "node": "Set Id & Replace \"",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Set Id & Replace \"": {
+        "main": [
+          [
+            {
+              "node": "Complete Todo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Complete Todo": {
+        "main": [
+          [
+            {
+              "node": "Is Silent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Is Silent": {
+        "main": [
+          [
+            {
+              "node": "Create Direct Channel",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "HTTP Request",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Direct Channel": {
+        "main": [
+          [
+            {
+              "node": "Mattermost",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "pinData": {},
+    "meta": {
+      "instanceId": "e6829468b8f56d858129133d295d8fa9bedbd82172869cf86fc48c8e6e82b330"
+    }
+  }
