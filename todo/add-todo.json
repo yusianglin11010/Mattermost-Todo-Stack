@@ -4,7 +4,7 @@
       "parameters": {
         "operation": "insert",
         "collection": "todo",
-        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority,created_at",
+        "fields": "channel_id,text,user_name,user_id,id,done,assignee,priority,tag,created_at",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
@@ -39,7 +39,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /-([a-zA-Z0-9_]+)=\"([^\"]*)\"/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'c') {\n        text = value;\n    } else if (key === 'a') {\n        assignee = value;\n    } else if (key === 'p') {\n        priority = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority };"
+        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /-([a-zA-Z0-9_]+)=\"([^\"]*)\"/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\nlet tag = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'c') {\n        text = value;\n    } else if (key === 'a') {\n        assignee = value;\n    } else if (key === 'p') {\n        priority = value;\n    } else if (key === 't') {\n      tag = value;\n    }\n}\n\n// Return the results\nreturn { text, assignee, priority, tag };"
       },
       "id": "814a13b7-dab7-4e68-a742-292dcd444428",
       "name": "Todo Creation Arg Converter",
@@ -167,6 +167,12 @@
               "name": "priority",
               "value": "={{ $('Todo Creation Arg Converter').item.json.priority }}",
               "type": "number"
+            },
+            {
+              "id": "548e99fe-ac94-4aeb-b2a5-20e42d212e58",
+              "name": "tag",
+              "value": "={{ $('Todo Creation Arg Converter').item.json.tag }}",
+              "type": "string"
             },
             {
               "id": "be46dd0f-ccc7-4b2d-8532-9b39fb2135ea",
