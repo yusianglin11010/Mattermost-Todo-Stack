@@ -37,7 +37,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /-([a-zA-Z0-9_]+)=\"([^\"]*)\"/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\nlet id = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    } else if (key === 'i' || key === 'id') {\n        id = value;\n    }\n\n}\n\n// Return the results\nreturn { text, assignee, priority, id };"
+        "jsCode": "const input = $input.first().json.body.text;\n\n// Use a single regex to capture key-value pairs for both long (--key=value) and short (-k=value) options\nconst regex = /-([a-zA-Z0-9_]+)=\"([^\"]*)\"/gu;\n\nlet matches;\nlet text = null;\nlet assignee = null;\nlet priority = null;\nlet id = null;\nlet tag = null;\n\n// Loop through the matches\nwhile ((matches = regex.exec(input)) !== null) {\n    const key = matches[1] || matches[3]; // Get long option name or short key\n    var value = matches[2] || matches[4]; // Get the associated value\n    value = value.trimEnd()\n    // Assign to the appropriate variable based on the key\n    if (key === 'content' || key === 'c') {\n        text = value;\n    } else if (key === 'assignee' || key === 'a') {\n        assignee = value;\n    } else if (key === 'priority' || key === 'p') {\n        priority = value;\n    } else if (key === 'i' || key === 'id') {\n        id = value;\n    } else if (key === 't')\n    {\n        tag = value;\n    }\n\n}\n\n// Return the results\nreturn { text, assignee, priority, id, tag };"
       },
       "id": "e30c7bde-11f2-4f5f-8611-b27a03673eb6",
       "name": "Todo Creation Arg Converter",
@@ -75,6 +75,12 @@
               "name": "priority",
               "value": "={{ $json.priority }}",
               "type": "number"
+            },
+            {
+              "id": "828feeca-374e-4cb0-9db9-b38f31674d5f",
+              "name": "tag",
+              "value": "={{ $json.tag }}",
+              "type": "string"
             }
           ]
         },
@@ -178,6 +184,12 @@
               "name": "_id",
               "value": "={{ $('Set Id & Replace \"').first().json._id.replace(/\\\"/g, \"\") }}",
               "type": "string"
+            },
+            {
+              "id": "053327e0-95a5-4342-83bc-43cc4857f996",
+              "name": "tag",
+              "value": "={{ $('Set Variables').item.json.tag }}",
+              "type": "string"
             }
           ]
         },
@@ -248,7 +260,7 @@
         "operation": "findOneAndUpdate",
         "collection": "todo",
         "updateKey": "_id",
-        "fields": "text,assignee,priority",
+        "fields": "text,assignee,priority,tag",
         "options": {}
       },
       "type": "n8n-nodes-base.mongoDb",
